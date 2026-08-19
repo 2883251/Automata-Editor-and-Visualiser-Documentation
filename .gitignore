@@ -1,0 +1,28 @@
+# MkDocs build output
+site/
+
+# Python environment
+venv/
+env/
+.venv/
+
+# Cache files
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# MkDocs temporary files
+.mkdocs.yml.bak

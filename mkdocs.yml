@@ -1,0 +1,86 @@
+site_name: Automata Editor Documentation
+site_description: Comprehensive documentation for the Automata Editor - an educational tool for visualizing and executing Turing Machines
+site_author: Automata Editor Team
+site_url: https://automata-editor-docs.pages.dev/  # Update with actual Cloudflare Pages domain
+
+theme:
+  name: material
+  palette:
+    - scheme: light
+      primary: indigo
+      accent: indigo
+    - scheme: dark
+      primary: indigo
+      accent: indigo
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.tracking
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.details
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+      - Overview: User Guide/index.md
+      - Basic Features: User Guide/basic-features.md
+      - Intermediate Features: User Guide/intermediate-features.md
+      - Advanced Features: User Guide/advanced-features.md
+  - Technical Architecture:
+      - Overview: Technical Architecture/index.md
+      - System Overview: Technical Architecture/system-overview.md
+      - Backend Architecture: Technical Architecture/backend-architecture.md
+      - Frontend Architecture: Technical Architecture/frontend-architecture.md
+  - API Documentation:
+      - Overview: API Documentation/index.md
+      - Authentication & Security: API Documentation/authentication.md
+      - REST Endpoints: API Documentation/rest-endpoints.md
+      - WebSocket Events: API Documentation/websocket-events.md
+      - Data Models: API Documentation/data-models.md
+  - Development Guide:
+      - Overview: Development Guide/index.md
+      - Coding Standards: Development Guide/coding-standards.md
+      - Contribution Guidelines: Development Guide/contribution-guidelines.md
+      - Testing Strategy: Development Guide/testing-strategy.md
+      - CI/CD Pipeline: Development Guide/ci-cd-pipeline.md
+  - Project Foundations:
+      - Git Methodology: Project Foundations/git-methodology.md
+      - Project Methodology: Project Foundations/project-methodology.md
+      - Tech Stack: Project Foundations/tech-stack.md
+  - Examples & Tutorials:
+      - Overview: Examples & Tutorials/index.md
+      - Basic Tutorials: Examples & Tutorials/basic-tutorials.md
+      - Intermediate Examples: Examples & Tutorials/intermediate-examples.md
+      - Advanced Demonstrations: Examples & Tutorials/advanced-demonstrations.md
+  - Troubleshooting & FAQ: troubleshooting.md
+  - Glossary: glossary.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com
