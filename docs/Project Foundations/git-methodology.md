@@ -149,7 +149,9 @@ The following rules are configured on `main` and on the active release branch:
 
 Merging the release branch into `main` is what deploys the application.
 
-Responsibility for the release is assigned at the sprint meeting preceding it. The release procedure is:
+Responsibility for the release is assigned at the sprint meeting preceding it. The procedure below
+releases the **applications**. The core package is released on its own cadence and its tag goes
+elsewhere — see *Versioning the core package*.
 
 1. Confirm CI is green on the release branch
 2. Open a PR from the release branch into `main`
@@ -158,6 +160,58 @@ Responsibility for the release is assigned at the sprint meeting preceding it. T
 5. Tag `main` with the release version
 6. Confirm the deployed applications are up and healthy
 7. Cut the next release branch from `main`
+
+### Versioning the core package
+
+The applications are deployed, not published, so their version numbers carry no weight. The core
+package is different: both applications depend on it, so its version is a contract and follows
+[Semantic Versioning](https://semver.org/).
+
+Core versions **independently of the sprint cadence**. The bump follows from the commit types
+included in the release:
+
+| Commit type in the release | Bump | Example |
+| --- | --- | --- |
+| `feat` | Minor | `1.2.0` → `1.3.0` |
+| `fix`, `perf` | Patch | `1.2.0` → `1.2.1` |
+| `!` marker or `BREAKING CHANGE:` footer | Major | `1.2.0` → `2.0.0` |
+| `docs`, `test`, `ci`, `chore`, `refactor` | None | not released on its own |
+
+Tags are `v<major>.<minor>.<patch>` — for example `v1.3.0` — and are pushed to the core
+repository, not to the applications. Pushing the tag is what publishes the package.
+
+**The core tag goes on the release branch, not on `main`.** The application procedure above tags
+`main` because merging into `main` is what deploys, but the core package is published rather than
+deployed, and it releases independently of the sprint cadence. Requiring a merge into `main` would
+couple every library version to an application deployment, which is the coupling this section
+exists to avoid. So a core release is: merge the version bump into the release branch, then tag
+that merge commit and push the tag. `publish.yml` triggers on any `v*` tag regardless of branch.
+
+Core stays on `0.x` only until the machine model lands, at which point it goes to **`1.0.0`**.
+This is deliberate: a `^0.1.0` range resolves to `0.1.x` only, so every minor release would mean
+a manual dependency edit in both application repositories. From `1.0.0` a `^1.x` range picks up
+minors and patches on its own, and a breaking change is signalled by the major bump instead.
+
+Every release updates `CHANGELOG.md` in the core repository. The `VERSION` export and
+`package.json` are checked against each other by the test suite, so they cannot drift.
+
+### Distributing the core package
+
+The core package is published to this Gitea instance's built-in **npm package registry**, under
+the `@brh` scope:
+
+```
+https://sdp.ms.wits.ac.za/api/packages/brh/npm/
+```
+
+It was chosen over a direct git reference because it gives real semver resolution, installs a
+prebuilt tarball instead of compiling the package during install, and adds no infrastructure —
+the registry is part of the server the repositories already use.
+
+Authentication is per-developer, through an `.npmrc` holding a Gitea access token. Reading needs
+the `read:package` scope and publishing needs `write:package`; the repository scopes are separate
+and a `write:repository` token is rejected by the registry. The core repository's `README.md`
+carries the setup steps and an `.npmrc.example`.
 
 ## 8. Enforcement
 
@@ -170,11 +224,15 @@ Where possible the rules above are enforced mechanically:
 ## 9. Open Points
 
 - Commit message linting tool TBD and configured
-- Distribution mechanism for the shared `package` across the two application
-  repositories (registry vs. git reference) TBD
-- Release version scheme TBD.
 - Potential TM-core language TBD (C or C++ good options).
+
+Settled since the first draft:
+
+- **Distribution mechanism** — the Gitea npm package registry, over a git reference. See
+  §7, *Distributing the core package*.
+- **Release version scheme** — independent semver for the core package, driven by commit type.
+  See §7, *Versioning the core package*.
 
 <br>
 
-**AI Declaration:** The preceding document was reviewed and edited with the assisstance of: Claude Web [Claude Opus 5].
+**AI Declaration:** The preceding document was reviewed and edited with the assisstance of: Claude Web [Claude Opus 5]. The versioning and distribution sections in §7, and the corresponding updates to §9, were written with the assistance of: Claude Code [Claude Opus 5].
