@@ -39,23 +39,23 @@ The Automata Editor is an educational platform designed for computer science stu
 
 <div class="grid cards" markdown>
 
--   :art: **[UI Design](ui-design.md)**
+-   🎨 **[UI Design](ui-design.md)**
     
     Visual mockup of the application's three-pane editor interface.
 
--   :gear: **[Technical Architecture](Technical%20Architecture/index.md)**
+-   ⚙️ **[Technical Architecture](Technical%20Architecture/index.md)**
     
     Understand the system design, backend and frontend components, and how they interact.
 
--   :api: **[API Documentation](API%20Documentation/index.md)**
+-   🔗 **[API Documentation](API%20Documentation/index.md)**
     
     Reference for REST endpoints, authentication, WebSocket events, and data models.
 
--   :wrench: **[Development Guide](Development%20Guide/index.md)**
+-   🔧 **[Development Guide](Development%20Guide/index.md)**
     
     Contribute to the project with coding standards, testing strategies, and CI/CD information.
 
--   :memo: **[Project Foundations](Project%20Foundations/git-methodology.md)**
+-   📝 **[Project Foundations](Project%20Foundations/git-methodology.md)**
     
     Git methodology, project structure, and technology stack documentation.
 
