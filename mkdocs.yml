@@ -1,7 +1,7 @@
 site_name: Automata Editor Documentation
 site_description: Comprehensive documentation for the Automata Editor - an educational tool for visualizing and executing Turing Machines
 site_author: Automata Editor Team
-site_url: https://automata-editor-docs.pages.dev/  # Update with actual Cloudflare Pages domain
+site_url: ''  # Updated when GitHub Pages domain is confirmed
 
 theme:
   name: material
@@ -46,11 +46,7 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - User Guide:
-      - Overview: User Guide/index.md
-      - Basic Features: User Guide/basic-features.md
-      - Intermediate Features: User Guide/intermediate-features.md
-      - Advanced Features: User Guide/advanced-features.md
+  - UI Design: ui-design.md
   - Technical Architecture:
       - Overview: Technical Architecture/index.md
       - System Overview: Technical Architecture/system-overview.md
@@ -69,16 +65,12 @@ nav:
       - Testing Strategy: Development Guide/testing-strategy.md
       - CI/CD Pipeline: Development Guide/ci-cd-pipeline.md
   - Project Foundations:
+      - Overview: Project Foundations/index.md
       - Git Methodology: Project Foundations/git-methodology.md
       - Project Methodology: Project Foundations/project-methodology.md
       - Tech Stack: Project Foundations/tech-stack.md
-  - Examples & Tutorials:
-      - Overview: Examples & Tutorials/index.md
-      - Basic Tutorials: Examples & Tutorials/basic-tutorials.md
-      - Intermediate Examples: Examples & Tutorials/intermediate-examples.md
-      - Advanced Demonstrations: Examples & Tutorials/advanced-demonstrations.md
-  - Troubleshooting & FAQ: troubleshooting.md
   - Glossary: glossary.md
+  - Proof of Meetings: proof-of-meetings.md
 
 extra:
   social:

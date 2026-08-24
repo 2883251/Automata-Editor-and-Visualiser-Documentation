@@ -56,13 +56,13 @@ After creating a machine, use the **Computation Visualizer** to:
 
 ## Next Steps
 
-- **Learn more:** See the [User Guide](User%20Guide/index.md) for feature-by-feature documentation
-- **Explore examples:** Check out [Examples & Tutorials](Examples%20%26%20Tutorials/index.md)
-- **Get help:** Visit [Troubleshooting & FAQ](troubleshooting.md) if you encounter issues
+- **Architecture:** Explore the [Technical Architecture](Technical%20Architecture/index.md)
+- **API reference:** See [API Documentation](API%20Documentation/index.md)
+- **Contributing:** Read the [Development Guide](Development%20Guide/index.md)
 
 ## Need Help?
 
-- **Technical issues?** See the [Troubleshooting & FAQ](troubleshooting.md)
+- **Terminology?** See the [Glossary](glossary.md)
 - **Want to contribute?** Read the [Contribution Guidelines](Development%20Guide/contribution-guidelines.md)
 - **Looking for API details?** Visit the [API Documentation](API%20Documentation/index.md)
 

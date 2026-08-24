@@ -39,9 +39,9 @@ The Automata Editor is an educational platform designed for computer science stu
 
 <div class="grid cards" markdown>
 
--   :book: **[User Guide](User%20Guide/index.md)**
+-   :art: **[UI Design](ui-design.md)**
     
-    Learn how to use the Automata Editor effectively, from basic operations to advanced features.
+    Visual mockup of the application's three-pane editor interface.
 
 -   :gear: **[Technical Architecture](Technical%20Architecture/index.md)**
     
@@ -55,10 +55,6 @@ The Automata Editor is an educational platform designed for computer science stu
     
     Contribute to the project with coding standards, testing strategies, and CI/CD information.
 
--   :bulb: **[Examples & Tutorials](Examples%20%26%20Tutorials/index.md)**
-    
-    Hands-on tutorials and demonstrations from basic to advanced use cases.
-
 -   :memo: **[Project Foundations](Project%20Foundations/git-methodology.md)**
     
     Git methodology, project structure, and technology stack documentation.
@@ -71,7 +67,6 @@ New to the Automata Editor? Start with the **[Getting Started](getting-started.m
 
 ## Looking for Help?
 
-- **Questions?** Check the [Troubleshooting & FAQ](troubleshooting.md)
 - **Business terms?** See the [Glossary](glossary.md)
 - **Contributing?** Review our [Contribution Guidelines](Development%20Guide/contribution-guidelines.md)
 
@@ -82,7 +77,7 @@ The Automata Editor is built with a modern, non-monolithic architecture:
 - **Frontend Application** — React + Vite with Visual and Code Editors
 - **Backend API** — Express.js with hand-written HTTP endpoints
 - **Database** — MongoDB for persistence
-- **Documentation** — This MkDocs site, deployed on Cloudflare Pages
+- **Documentation** — This MkDocs site, deployed on GitHub Pages
 
 ---
 

@@ -38,30 +38,28 @@ The built site will be in the `site/` directory.
 │   ├── index.md        # Homepage
 │   ├── getting-started.md
 │   ├── glossary.md
-│   ├── troubleshooting.md
-│   ├── User Guide/
+│   ├── ui-design.md
+│   ├── proof-of-meetings.md
 │   ├── Technical Architecture/
 │   ├── API Documentation/
 │   ├── Development Guide/
 │   ├── Project Foundations/
-│   └── Examples & Tutorials/
+│   └── assets/
 └── site/               # Build output (generated)
 ```
 
 ## Documentation Sections
 
-- **[User Guide](docs/User%20Guide/index.md)** — How to use the Automata Editor
 - **[Technical Architecture](docs/Technical%20Architecture/index.md)** — System design and component architecture
 - **[API Documentation](docs/API%20Documentation/index.md)** — REST API and WebSocket reference
 - **[Development Guide](docs/Development%20Guide/index.md)** — Contributing and development setup
 - **[Project Foundations](docs/Project%20Foundations/index.md)** — Git methodology, project structure, and tech stack
-- **[Examples & Tutorials](docs/Examples%20%26%20Tutorials/index.md)** — Hands-on guides and demonstrations
+- **[UI Design](docs/ui-design.md)** — Application UI mockup and pane layout
+- **[Proof of Meetings](docs/proof-of-meetings.md)** — Meeting evidence log
 
 ## Deployment
 
-The documentation is automatically built and deployed to **Cloudflare Pages** on every push to the main branch.
-
-**Live Documentation**: https://automata-editor-docs.pages.dev/
+The documentation is automatically built and deployed to **GitHub Pages** on every push to the main branch.
 
 ## Contributing
 
@@ -75,16 +73,6 @@ To contribute to the documentation:
 
 Documentation contributions follow the same workflow as code contributions. See the [Contribution Guidelines](docs/Development%20Guide/contribution-guidelines.md) for details.
 
-## Placeholder Pages
-
-The following pages are placeholders awaiting content from team members:
-
-- [Git Methodology](docs/Project%20Foundations/git-methodology.md)
-- [Project Methodology](docs/Project%20Foundations/project-methodology.md)
-- [Tech Stack](docs/Project%20Foundations/tech-stack.md)
-
-All other pages include topic outlines and are ready for content to be added.
-
 ## Building and Deployment
 
 ### Local Build
@@ -93,7 +81,7 @@ All other pages include topic outlines and are ready for content to be added.
 mkdocs build
 ```
 
-### Deployment to Cloudflare Pages
+### Deployment to GitHub Pages
 
 Push changes to the main branch. The CI/CD pipeline automatically builds and deploys the documentation.
 
