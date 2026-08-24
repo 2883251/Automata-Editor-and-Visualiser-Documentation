@@ -25,9 +25,9 @@ The Development Guide covers:
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24+
 - Git and Gitea access
-- PostgreSQL or MongoDB (depending on component)
+- MongoDB
 - A text editor or IDE (VS Code, WebStorm, etc.)
 
 ### Quick Start
@@ -67,7 +67,7 @@ npm test
 
 **For detailed information, see the specific documentation pages.**
 
-**Related**: [User Guide](../User%20Guide/index.md) | [Technical Architecture](../Technical%20Architecture/index.md)
+**Related**: [Technical Architecture](../Technical%20Architecture/index.md) | [API Documentation](../API%20Documentation/index.md)
 
 ---
 

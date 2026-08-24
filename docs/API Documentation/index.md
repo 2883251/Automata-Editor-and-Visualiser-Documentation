@@ -1,56 +1,44 @@
 # API Documentation
 
-This section provides comprehensive reference documentation for the Automata Editor API, including REST endpoints, WebSocket events, data models, and authentication.
-
-## Overview
-
-The Automata Editor exposes a RESTful HTTP API for:
-
-- Machine CRUD operations
-- User authentication and account management
-- Computation execution and results
-- Test case and debugging features
-- Sharing and collaboration
-- Export and import functionality
-
-Real-time features are supported via WebSocket connections for collaborative editing and live updates.
-
-## Sections
-
-- **[Authentication & Security](authentication.md)** — Auth0 integration, JWT validation, security practices
-- **[REST Endpoints](rest-endpoints.md)** — Complete API endpoint reference and examples
-- **[WebSocket Events](websocket-events.md)** — Real-time event types and message formats
-- **[Data Models](data-models.md)** — Schema definitions for machines, users, and results
-
-## Getting Started
-
-### Base URL
-
-```
-https://api.automata-editor.example.com/api/v1
-```
-
-### Authentication
-
-All requests require a valid JWT token:
-
-```
-Authorization: Bearer <token>
-```
-
-See [Authentication & Security](authentication.md) for details.
-
-### Quick Example
-
-```bash
-# Get all machines for the current user
-curl -H "Authorization: Bearer <token>" \
-  https://api.automata-editor.example.com/api/v1/machines
-```
+This section documents the Automata Editor and Visualiser backend API.
 
 ---
 
-**For detailed information, see the specific documentation pages.**
+## Current Status
+
+The API is in early development. The only endpoint currently implemented is:
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness check. Returns `{"status":"ok"}` |
+
+!!! info "Status: Planned"
+    The following endpoint groups are planned but not yet implemented:
+
+    - Machine CRUD operations (create, read, update, delete, list)
+    - Computation execution and results
+    - User account management (delegated to Auth0)
+    - Sharing and collaboration
+    - Test case management
+    - WebSocket events for real-time collaborative editing
+
+---
+
+## Sections
+
+- **[Authentication & Security](authentication.md)** — Auth0 integration, JWT validation, CORS
+- **[REST Endpoints](rest-endpoints.md)** — Current and planned endpoint reference
+- **[WebSocket Events](websocket-events.md)** — Planned real-time event types
+- **[Data Models](data-models.md)** — Core type definitions from `@brh/automata-core`
+
+---
+
+## Base URL
+
+- **Local development**: `http://localhost:4000`
+- **Production**: Azure App Service URL (configured per deployment)
+
+---
 
 **Related**: [Development Guide](../Development%20Guide/index.md) | [Technical Architecture](../Technical%20Architecture/index.md)
 
