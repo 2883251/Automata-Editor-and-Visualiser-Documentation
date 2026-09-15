@@ -22,8 +22,8 @@ Defined in `src/App.tsx` using React Router's `<Routes>`:
 | Path | Component | Description |
 |---|---|---|
 | `/` | `EditorRoute` | Main editor — three-pane layout with diagram, instruction editor, simulation |
-| `/machines` | `MachineListRoute` | Saved machines list (placeholder) |
-| `/sign-in` | `SignInRoute` | Auth0 sign-in page (placeholder) |
+| `/machines` | `MachineListRoute` | Saved machines list — create, open, rename, delete (machine CRUD, F2-F5) |
+| `/sign-in` | `SignInRoute` | Auth0 sign-in page |
 
 ---
 
@@ -50,8 +50,14 @@ Key implementation details:
 | `NavBar` | Top navigation bar with logo, document actions (New/Open/Save/Export), Machines link, auth control, mobile hamburger menu |
 | `Pane` | Labelled section with title header and scrollable content area |
 | `PaneDivider` | Draggable divider between panes with pointer and keyboard resize handlers |
-| `OutputStrip` | Bottom strip for simulation output display |
+| `OutputStrip` | Bottom strip for simulation status and test-case suite results; collapsible |
 | `UnavailableButton` | Placeholder button for features not yet implemented |
+
+### Machine Components (`src/components/machine/`)
+
+| Component | Purpose |
+|---|---|
+| `MachineList` | Saved-machine list UI: open, rename, and delete saved machines (backed by `machine-store`) |
 
 ---
 
@@ -59,9 +65,11 @@ Key implementation details:
 
 | Directory | Library | Purpose |
 |---|---|---|
-| `diagram/` | React Flow (`@xyflow/react@^12.11.3`) | Interactive state diagram — drag nodes, draw edges, custom node rendering |
+| `diagram/` | React Flow (`@xyflow/react@^12.11.3`) | Interactive state diagram — drag nodes, draw edges, custom node rendering; `diagram-export.ts` renders the diagram to PNG/SVG for export (H1) |
 | `code-editor/` | Monaco Editor (`@monaco-editor/react@^4.7.0`) | Instruction language editing with syntax highlighting and error markers |
-| `tape/` | — | Tape visualiser and simulation controls |
+| `tape/` | — | TM simulation: `SimulationPane`, `TapeView` (tape rendering that follows the head), and the `useSimulation` hook driving Core's `step()` on a timer loop (G2-G5) |
+| `export/` | `html-to-image` | Export dialog (H1-H2): diagram as PNG/SVG image, instruction table as CSV/HTML download or clipboard copy |
+| `test-cases/` | — | Test-case authoring and suite runs (I1-I3): `TestCasePanel`, `useSuiteRun`, and complexity plots (K2): `ComplexityChart`, `ComplexityDialog`, `complexity-model` |
 
 ---
 
@@ -69,8 +77,8 @@ Key implementation details:
 
 | Directory | Purpose |
 |---|---|
-| `lib/` | API client, `useMediaQuery` hook, `useResizablePanels` hook |
-| `hooks/` | Shared React hooks |
+| `lib/` | `machine-store` (localStorage-backed saved machines), `editor-draft`, `alphabet` helpers, `auth-config`, `useMediaQuery` hook, `useResizablePanels` hook |
+| `hooks/` | Shared React hooks (`useAuthUser`) |
 | `types/` | Shared TypeScript type declarations |
 | `test/` | Test setup and helpers (Vitest + RTL) |
 
@@ -80,9 +88,16 @@ Key implementation details:
 
 - **Package**: `@auth0/auth0-react@^2.24.1`
 - **Purpose**: Login/logout, token management, user profile access via Auth0 Universal Login
+- The `Auth0Provider` wrapper, sign-in/sign-out routes, and session persistence are wired up; the backend validates the resulting JWTs on protected routes (see [Authentication & Security](../API%20Documentation/authentication.md)).
 
-!!! info "Status: Planned"
-    The `@auth0/auth0-react` package is installed but the `Auth0Provider` wrapper and login flows are not yet wired up. The sign-in route currently renders a placeholder.
+---
+
+## Machine Persistence (current state)
+
+Machine CRUD (create, save, open, rename, delete) persists machines **in the browser's `localStorage`** under the key `automata-editor:machines` (`src/lib/machine-store.ts`). A saved machine stores its instruction source text, diagram layout positions, and timestamps.
+
+!!! note "In flight"
+    Keeping machines in the signed-in user's account via the backend API ([F7]) is under review as PR #70 in the frontend repository; the backend endpoints it will call are documented in [REST Endpoints](../API%20Documentation/rest-endpoints.md).
 
 ---
 
@@ -106,8 +121,12 @@ import NavBar from '@/components/layout/NavBar'
 | `@xyflow/react` | ^12.11.3 | State diagram editor |
 | `@monaco-editor/react` | ^4.7.0 | Code editor |
 | `tailwindcss` | ^4.3.3 | Utility-first CSS |
-| `@auth0/auth0-react` | ^2.24.1 | Authentication (planned) |
-| `@brh/automata-core` | ^2.0.0 | Shared machine model |
+| `@auth0/auth0-react` | ^2.24.1 | Authentication |
+| `@brh/automata-core` | ^2.2.0 | Shared machine model, parser, simulator, test cases |
+| `html-to-image` | ^1.11.13 | Diagram PNG/SVG rendering for export |
+
+!!! note "Core version"
+    The frontend consumes Core `^2.2.0`. Adopting Core 3.0.0 (multi-tape and multi-step machine variants) is under review as PR #72 in the frontend repository; see [TM Variants](../Features/tm-variants.md).
 
 ---
 

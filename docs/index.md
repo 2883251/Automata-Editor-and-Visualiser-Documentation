@@ -39,6 +39,10 @@ The Automata Editor is an educational platform designed for computer science stu
 
 <div class="grid cards" markdown>
 
+-   🚀 **[Features](Features/index.md)**
+    
+    What the editor can do today: simulation, machine management, test cases, export, and sharing.
+
 -   🎨 **[UI Design](ui-design.md)**
     
     Visual mockup of the application's three-pane editor interface.
@@ -75,6 +79,7 @@ New to the Automata Editor? Start with the **[Getting Started](getting-started.m
 The Automata Editor is built with a modern, non-monolithic architecture:
 
 - **Frontend Application** — React + Vite with Visual and Code Editors
+- **Shared Core Package** — `@brh/automata-core`: the machine model, parser, simulator, and test cases, published to the Gitea npm registry
 - **Backend API** — Express.js with hand-written HTTP endpoints
 - **Database** — MongoDB for persistence
 - **Documentation** — This MkDocs site, deployed on GitHub Pages

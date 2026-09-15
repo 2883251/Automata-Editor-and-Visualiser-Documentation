@@ -2,9 +2,11 @@
 
 The application uses Auth0 (Google) for all authentication. No custom auth logic is written — Auth0 handles sign-up, sign-in, password reset, account deletion, and social login via its hosted Universal Login page.
 
+Authentication is fully wired: the frontend sign-in/sign-out flows and session persistence are live, and every machine and share endpoint on the backend requires a valid JWT.
+
 ---
 
-## Packages Installed
+## Packages
 
 | Repo | Package | Version | Role |
 |---|---|---|---|
@@ -42,22 +44,37 @@ The application uses Auth0 (Google) for all authentication. No custom auth logic
 
 ---
 
+## Claims and User Records
+
+Auth0 access tokens carry only `sub` by default. The tenant's **post-login Action** adds the user's email and name under a namespaced claim prefix so they do not collide with standard OIDC claim names:
+
+- Claim namespace: `https://automata-ev/` — i.e. `https://automata-ev/email` and `https://automata-ev/name`
+- The backend reads the namespaced claims first and falls back to plain `email`/`name` if present (`src/config/claims.ts`)
+- `GET /api/me` reflects the resolved `sub`, `email`, and `name` back to the frontend
+
+**User records** (sprint 2, M1/F1): a middleware running after JWT validation on every protected route upserts a `users` collection document keyed on the unique `sub`, refreshing the email and name from the token. This directory is what lets an owner share a machine **by email**: the API resolves the typed email to the recipient's `sub` and stores that in the machine's `sharedWith` list.
+
+- The collection holds **no credentials** — Auth0 owns identity
+- A recipient must have used the app at least once before a machine can be shared with them
+- Recording skips (and never fails a request) when MongoDB is not connected
+
+See [Sharing](../Features/sharing.md) for the user-facing flow and [REST Endpoints](rest-endpoints.md) for the share endpoints.
+
+---
+
 ## CORS Configuration
 
 The backend uses the `cors` middleware with origin restricted to `CORS_ORIGIN` (defaults to `*`). In production this is set to the frontend's Azure URL.
 
 ---
 
-!!! info "Status: Planned"
-    Both packages are installed but route protection is not yet implemented:
+## Development Without Auth0 Configured
 
-    - The frontend sign-in route (`/sign-in`) renders a placeholder
-    - The backend has no JWT middleware registered in `createApp()`
-    - No routes currently require authentication
+If `AUTH0_ISSUER_BASE_URL` or `AUTH0_AUDIENCE` is unset (common before the tenant is set up), the auth middleware responds **503 Service Unavailable** with a clear message on protected routes instead of failing confusingly — the API still boots and serves `/health`.
 
 ---
 
-**Related**: [REST Endpoints](rest-endpoints.md) | [Data Models](data-models.md)
+**Related**: [REST Endpoints](rest-endpoints.md) | [Data Models](data-models.md) | [Backend Architecture](../Technical%20Architecture/backend-architecture.md)
 
 ---
 

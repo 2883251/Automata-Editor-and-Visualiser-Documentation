@@ -14,6 +14,14 @@ Testing frameworks and configuration for each repository.
 
 ---
 
+## Shipped Test Suites (Sprint 2)
+
+- **Core**: unit tests beside the source for the machine model, parser, simulator, serialisation, and test-case modules. A public-API surface test (`index.test.ts`) fails whenever an export is added to or removed from the barrel without updating the expected list.
+- **Frontend**: unit tests for the machine store, the machine list UI/routes, and the simulation controller (`use-simulation`), plus component tests with React Testing Library. Playwright e2e specs cover the simulator (live playback, budget pause, cancel-on-edit), export, test cases, and diagram edge labels.
+- **Backend**: controller, model, and schema tests run against Vitest mocks — no MongoDB instance is required (`mongodb-memory-server` was removed for AVX-less CI compatibility).
+
+---
+
 ## Vitest (All Repos)
 
 Vitest is the unit and integration test runner across all three TypeScript repositories. It shares Vite's module graph in the frontend and runs standalone in Core and Backend.
@@ -115,8 +123,8 @@ All tests run as part of the Gitea Actions CI pipeline on every pull request. Se
 
 ## Coverage Expectations
 
-- **Sprint 1**: Basic unit tests for core logic
-- **Sprint 2**: UI *or* API testing required
+- **Sprint 1** (delivered): Basic unit tests for core logic
+- **Sprint 2** (delivered): UI *and* API testing — frontend unit suites and Playwright e2e specs, backend controller/model/schema tests
 - **Sprint 3**: Both UI and API testing — useful, extensive test suites
 
 ---
