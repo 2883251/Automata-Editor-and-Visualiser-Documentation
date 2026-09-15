@@ -43,6 +43,7 @@ The TM simulation engine (machine model, parser, simulator) lives in the `Automa
 | **Monaco Editor** | Code/instruction editor | The same editor engine that powers VS Code. Provides syntax highlighting, autocompletion, and inline error markers for the TM instruction language. |
 | **Tailwind CSS** | Styling | Utility-first approach for rapid UI development, consistent design tokens, and responsive layouts without writing custom CSS files. |
 | **React Router** | Client-side routing | Standard routing solution for React SPAs. Handles navigation between machine list, editor, visualiser, and settings views. |
+| **html-to-image** | Diagram export (PNG/SVG) | Client-side rendering of the state diagram to raster/vector images for the export feature. Added in sprint 2; no server-side rendering involved. |
 
 ### State management
 
@@ -55,8 +56,8 @@ React's built-in `useState` / `useReducer` with a context layer is used initiall
 | Technology | Role | Motivation |
 |---|---|---|
 | **Express** | HTTP API server | Minimal, well-understood framework. The API is hand-written (no auto-generated endpoints) and Express gives full control over route definitions and middleware. |
-| **Mongoose** | ODM (Object Document Mapper) | Schema-based modelling for MongoDB with built-in validation, middleware, and TypeScript support. The document model maps naturally to semi-structured machine definitions (nested states, transitions, alphabets). |
-| **MongoDB Atlas** | Managed cloud database | Fully managed MongoDB cluster with automatic backups, scaling, and monitoring. The free tier (M0) provides a shared 512 MB cluster suitable for development and early deployment. The document model maps naturally to semi-structured machine definitions (nested states, transitions, alphabets). |
+| **Mongoose** | ODM (Object Document Mapper) | Schema-based modelling for MongoDB with built-in validation, middleware, and TypeScript support. Enforces field types, required constraints, defaults, and indexes at the ODM layer on top of MongoDB's flexible document model; TypeScript integration ensures type safety from the database through to the API controllers. |
+| **MongoDB Atlas** | Managed cloud database | Fully managed MongoDB cluster with automatic backups, scaling, and monitoring. The free tier (M0) provides a shared 512 MB cluster suitable for development and early deployment. Chosen over relational databases because machine definitions are hierarchical (states contain transitions, transitions reference symbols, positions are keyed by state id) — the document model stores a complete machine in a single record without joins, and the JSON-native storage aligns with the REST API's wire format so no ORM mapping layer is needed between the database and HTTP responses. |
 | **Auth0 (Google)** | Authentication platform | Fully managed identity service handling sign-up, sign-in, password reset, account deletion, and social login. Provides both a React SDK (`@auth0/auth0-react`) and Express middleware (`express-oauth2-jwt-bearer`) for token validation. Satisfies the requirement to use established, audited auth systems rather than writing a custom one. |
 | **Zod** | Request validation | Runtime type validation for API request bodies, query parameters, and path parameters. Shares type definitions with the TypeScript codebase. |
 
@@ -66,15 +67,14 @@ React's built-in `useState` / `useReducer` with a context layer is used initiall
 
 | Technology | Role | Motivation |
 |---|---|---|
-| **TypeScript** | TM model, parser, simulator | Core simulation logic with full type safety. Published as an npm-style package consumed by both the Frontend and Backend repos. |
+| **TypeScript** | TM model, parser, simulator, test cases | Core simulation logic with full type safety. Published to the Gitea npm registry as `@brh/automata-core` and consumed by both the Frontend and Backend repos. |
 | **Vitest** | Unit testing | Same test runner as the frontend for consistency. The simulation logic is pure and highly testable. |
 
 ### Distribution
 
-The Core package is consumed by the Frontend and Backend repositories. The distribution mechanism is TBD — options include:
-- **npm workspaces** (if using a mono-repo workspace tool like Turborepo or pnpm workspaces across repos)
-- **Private npm registry** (e.g., Verdaccio hosted on Gitea)
-- **Git reference** (direct dependency from the Gitea repository)
+The Core package is published to **Gitea's npm package registry** under the `@brh` scope as `@brh/automata-core`; both consumers install it as a normal dependency from that registry.
+
+As of sprint 2 the published version is **3.0.0** (multi-tape support). The Frontend currently consumes `^2.2.0` (its 3.0.0-based variant UI is in review) and the Backend `^2.0.0`. The package has zero runtime dependencies and follows Semantic Versioning — see [Core Package Architecture](../Technical%20Architecture/core-package.md).
 
 ---
 
@@ -87,7 +87,7 @@ The Core package is consumed by the Frontend and Backend repositories. The distr
 | **Playwright** | End-to-end / UI tests | Frontend (drives the full app against a running backend) |
 | **Supertest** | API integration tests | Backend |
 
-Testing coverage expectations grow across milestones: sprint 2 requires at least UI *or* API testing; sprint 3 expects both with useful, extensive test suites.
+Testing coverage expectations grow across milestones: sprint 2 requires at least UI *or* API testing; sprint 3 expects both with useful, extensive test suites. Sprint 2 delivered both — unit suites and Playwright e2e specs in the Frontend, and controller/model/schema tests in the Backend (see [Testing Strategy](../Development%20Guide/testing-strategy.md)).
 
 ---
 
@@ -125,13 +125,9 @@ Alternatives considered: **Docusaurus** (React-based, heavier for a docs-only si
 
 ## 9. External API Integration
 
-The project requires integration with at least one relevant external API service. Candidates will be evaluated as features develop. Possible integrations include:
+The project's external API integration is **Auth0** (see [Authentication & Security](#10-authentication-security)): a fully managed identity service whose hosted Universal Login, token issuance, and claims the application consumes. Sprint 2's sharing feature builds its user directory purely from the claims on each signed-in user's token (a post-login Action adds `https://automata-ev/`-namespaced claims) — no Auth0 Management API is called, and no identity data is stored beyond email and name.
 
-- **Export/conversion services** — e.g., converting diagrams to high-resolution images via a rendering API
-- **Collaboration/sharing APIs** — for the sharing and real-time collaboration features
-- **Complexity analysis tools** — external computation analysis services
-
-The specific integration will be documented as it is decided.
+Diagram export and test-case runs are handled entirely client-side by the Core package and `html-to-image`; no external rendering or analysis service is used.
 
 ---
 
@@ -162,12 +158,14 @@ No custom authentication logic is written. Auth0 is a mature, audited identity p
 | Code editor | Monaco Editor |
 | Styling | Tailwind CSS |
 | Routing | React Router |
+| Diagram export | html-to-image |
 | Backend framework | Express |
 | ORM / ODM | Mongoose |
 | Database | MongoDB Atlas (managed cloud) |
 | Auth | Auth0 (Google) |
 | Validation | Zod |
 | Shared core | TypeScript 6.0.3 (WASM migration path via C/Rust) |
+| Shared core package | `@brh/automata-core` (published to the Gitea npm registry) |
 | Testing (unit) | Vitest |
 | Testing (component) | React Testing Library |
 | Testing (e2e) | Playwright |

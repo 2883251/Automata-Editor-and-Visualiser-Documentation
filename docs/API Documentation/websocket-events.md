@@ -20,7 +20,7 @@ WebSocket connections are planned for real-time collaborative editing of Turing 
 
 ## Current State
 
-The backend currently exposes only a REST API (`GET /health`). No WebSocket server is configured. The `express` application does not yet have a WebSocket upgrade handler or any socket library installed.
+The backend exposes a REST API only (`/health`, `/api/me`, and the machine persistence and sharing endpoints documented in [REST Endpoints](rest-endpoints.md)). No WebSocket server is configured and no socket library is installed; sharing is currently request/response only, so a recipient sees machines shared with them on their next fetch of `/api/machines/shared-with-me`.
 
 ---
 

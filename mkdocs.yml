@@ -46,10 +46,19 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Features:
+      - Overview: Features/index.md
+      - Machine Management: Features/machine-management.md
+      - Simulation & Playback: Features/simulation.md
+      - Test Cases & Plots: Features/test-cases.md
+      - TM Variants: Features/tm-variants.md
+      - Export: Features/export.md
+      - Sharing: Features/sharing.md
   - UI Design: ui-design.md
   - Technical Architecture:
       - Overview: Technical Architecture/index.md
       - System Overview: Technical Architecture/system-overview.md
+      - Core Package Architecture: Technical Architecture/core-package.md
       - Backend Architecture: Technical Architecture/backend-architecture.md
       - Frontend Architecture: Technical Architecture/frontend-architecture.md
   - API Documentation:

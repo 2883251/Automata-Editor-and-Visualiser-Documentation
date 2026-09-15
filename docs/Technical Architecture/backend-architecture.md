@@ -21,28 +21,37 @@ The app uses a `createApp()` factory in `src/app.ts`, separated from `src/index.
 - `createApp()` — returns a configured Express instance without binding a port or connecting to a database. This lets tests drive the app directly with Supertest.
 - `index.ts` — handles environmental concerns: reading config, connecting to MongoDB, and starting the HTTP listener.
 
-### Middleware (currently registered)
+### Middleware
 
 | Middleware | Configuration |
 |---|---|
 | `cors` | Origin restricted to `CORS_ORIGIN` env var, defaults to `*` |
 | `express.json()` | Parses JSON request bodies |
+| `createAuthMiddleware()` | Auth0 JWT validation via `express-oauth2-jwt-bearer`; applied to every protected route |
+| `createUserRecordMiddleware()` | Runs after JWT validation: upserts a `UserModel` record for the caller keyed on the token's `sub`, refreshing email/name from token claims. Skips when MongoDB is not connected; a failed write is logged, never fails the request |
+| `validateBody(schema)` / `validateParams(schema)` | Zod request-body and path-parameter validation at the API boundary |
 
 ---
 
-## Current Endpoints
+## Endpoints
+
+All machine routes are mounted under `/api/machines` and require authentication. Full request/response reference: [REST Endpoints](../API%20Documentation/rest-endpoints.md).
 
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/health` | Liveness check. Returns `{"status":"ok"}` |
+| `GET` | `/api/me` | Returns the authenticated user's claims (`sub`, `email`, `name`) |
+| `GET` | `/api/machines` | List the caller's machines (summaries, newest first) |
+| `GET` | `/api/machines/shared-with-me` | Machines shared with the caller |
+| `GET` | `/api/machines/:id` | Get one machine (readable by owner and share recipients) |
+| `POST` | `/api/machines` | Create a machine (201) |
+| `PUT` | `/api/machines/:id` | Full-replacement update |
+| `PATCH` | `/api/machines/:id` | Rename |
+| `DELETE` | `/api/machines/:id` | Delete (204) |
+| `GET` / `POST` | `/api/machines/:id/shares` | List or add share recipients (owner only) |
+| `DELETE` | `/api/machines/:id/shares/:sub` | Revoke one recipient's access (owner only) |
 
-!!! info "Status: Planned"
-    The following features have dependencies installed but are not yet implemented:
-
-    - **Mongoose models** (`mongoose@^9.9.3`) — machine CRUD persistence to MongoDB Atlas
-    - **Zod schemas** (`zod@^4.4.3`) — request body and parameter validation
-    - **JWT auth** (`express-oauth2-jwt-bearer@^1.10.0`) — route protection via Auth0 token validation
-    - **Route modules** in `src/routes/`, `src/controllers/`, `src/middleware/`, `src/schemas/` — currently contain `.gitkeep` placeholders
+Every query is scoped by the caller's Auth0 `sub` claim; a machine shared with the caller can be read, but only its owner may change or delete it. The backend stores machine **content without validating machine semantics** — that is the Core package's job.
 
 ---
 
@@ -50,7 +59,32 @@ The app uses a `createApp()` factory in `src/app.ts`, separated from `src/index.
 
 - **Engine**: MongoDB Atlas (managed cloud, M0 free tier)
 - **ODM**: Mongoose 9
-- **Optional at startup**: If `MONGODB_URI` is unset, the server logs a warning and starts without a database connection. This allows the API to run before MongoDB is provisioned.
+- **Optional at startup**: If `MONGODB_URI` is unset, the server logs a warning and starts without a database connection. This allows the API to run before MongoDB is provisioned; machine persistence endpoints require the database.
+
+### Collections
+
+**machines** (`src/models/machine.ts`):
+
+| Field | Type | Notes |
+|---|---|---|
+| `owner` | string (Auth0 `sub`) | required, indexed |
+| `name` | string | default `'Untitled machine'`, trimmed, max 200 |
+| `source` | string | required — the instruction-language source text |
+| `positions` | `Map<string, {x, y}>` | diagram layout positions |
+| `sharedWith` | string[] | Auth0 `sub`s of share recipients |
+| `createdAt` / `updatedAt` | dates | Mongoose timestamps |
+
+Compound indexes: `{ owner: 1, updatedAt: -1 }` and `{ sharedWith: 1, updatedAt: -1 }`.
+
+**users** (`src/models/user.ts`):
+
+| Field | Type | Notes |
+|---|---|---|
+| `sub` | string | required, unique — Auth0 subject |
+| `email` | string (optional) | lowercased, trimmed, indexed |
+| `name` | string (optional) | trimmed |
+
+The users collection holds **no credentials** — Auth0 owns identity. It only resolves a `sub` to the email and name the token last carried, so an owner can share a machine by email. A recipient must have used the app at least once before a machine can be shared with them.
 
 ---
 
@@ -72,13 +106,13 @@ The app uses a `createApp()` factory in `src/app.ts`, separated from `src/index.
 src/
   app.ts                 createApp() factory — builds Express app
   index.ts               entry point: config, MongoDB connect, HTTP listen
-  routes/                route definitions (placeholder)
-  controllers/           request handlers (placeholder)
-  models/                Mongoose schemas and models (placeholder)
-  middleware/            auth, validation, error handling (placeholder)
-  schemas/               Zod schemas for request validation (placeholder)
-  config/                configuration helpers (placeholder)
-  types/                 shared type declarations (placeholder)
+  config/                claims.ts — reads the caller's identity from the validated token
+  routes/                machine.routes.ts — machine CRUD + sharing routes
+  controllers/           machine.controller.ts, share.controller.ts — request handlers
+  models/                machine.ts, user.ts — Mongoose schemas and models
+  middleware/            auth (JWT), user-record, validate (Zod)
+  schemas/               machine, share, params — Zod request validation schemas
+  types/                 shared type declarations
 ```
 
 ---
@@ -89,14 +123,14 @@ src/
 |---|---|---|
 | `express` | ^5.2.1 | HTTP framework |
 | `cors` | ^2.8.6 | Cross-origin resource sharing |
-| `mongoose` | ^9.9.3 | MongoDB ODM (planned) |
-| `zod` | ^4.4.3 | Request validation (planned) |
-| `express-oauth2-jwt-bearer` | ^1.10.0 | JWT auth middleware (planned) |
+| `mongoose` | ^9.9.3 | MongoDB ODM |
+| `zod` | ^4.4.3 | Request validation |
+| `express-oauth2-jwt-bearer` | ^1.10.0 | JWT auth middleware |
 | `@brh/automata-core` | ^2.0.0 | Shared machine model |
 
 ---
 
-**Related**: [System Overview](system-overview.md) | [Frontend Architecture](frontend-architecture.md)
+**Related**: [System Overview](system-overview.md) | [Frontend Architecture](frontend-architecture.md) | [Core Package](core-package.md)
 
 ---
 
