@@ -28,13 +28,13 @@ If you're contributing to the project, follow the [Development Guide](Developmen
 
 ## Creating Your First Turing Machine
 
-1. **Create a Machine** — Click "New Machine" from the machines list to start
-2. **Configure Alphabet** — Define the input and tape alphabets
+1. **Create a Machine** — On the home page, click **New machine** and give it a name. Or open one of the example machines to start from it
+2. **Configure Alphabet** — Open **Machine** from the activity bar on the right edge, and set the input and tape alphabets (and the number of tapes, if you need more than one)
 3. **Add States** — Use the visual editor to add states (drag on the canvas)
 4. **Define Transitions** — Draw arrows between states and specify transition rules
-5. **Save It** — Save the machine so you can rename, reopen, or delete it later ([Machine Management](Features/machine-management.md))
-6. **Run It** — Type an input in the simulation pane and press Run; pause, step, and reset stay available, and a long run pauses itself at a checkpoint ([Simulation & Playback](Features/simulation.md))
-7. **Prove It** — Add test cases with expected outcomes and run the suite, then plot time and space against input length ([Test Cases](Features/test-cases.md))
+5. **Save It** — Press **Save** (or Ctrl+S). Until you do, **Revert to last save** can undo your changes ([Machine Management](Features/machine-management.md))
+6. **Run It** — Type an input in the **Simulation** panel along the bottom and press Run; pause, step, and reset stay available, and a long run pauses itself at a checkpoint ([Simulation & Playback](Features/simulation.md))
+7. **Prove It** — In the **Test cases** view of the side bar, add test cases with expected outcomes and check them all. The status bar along the bottom sums up the results. Then plot time and space against input length ([Test Cases](Features/test-cases.md))
 8. **Share the Result** — Export the diagram as an image or the instructions as a table ([Export](Features/export.md))
 
 ## Key Concepts
@@ -43,14 +43,14 @@ If you're contributing to the project, follow the [Development Guide](Developmen
 
 The Automata Editor provides two synchronized views:
 
-- **Visual Editor**: Drag-and-drop state diagram editor (left panel)
-- **Code Editor**: Text-based machine definition (right panel)
+- **Visual Editor**: Drag-and-drop state diagram editor (on the left, to start with)
+- **Code Editor**: Text-based machine definition (on the right, to start with)
 
-Both views represent the same machine. Changes in one automatically update the other.
+Both views represent the same machine. Changes in one automatically update the other. The switch at the top right of the editors shows them side by side, stacked, or one at a time. See [UI Design](ui-design.md) for the whole layout.
 
 ### Computation Visualization
 
-Run your machine in the **simulation pane** to:
+Run your machine in the **Simulation** panel, along the bottom of the editor, to:
 
 - Watch the tape update and scroll as the head moves
 - Track the current state and the active transition on the diagram
@@ -72,4 +72,4 @@ Run your machine in the **simulation pane** to:
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

@@ -17,7 +17,7 @@ Testing frameworks and configuration for each repository.
 ## Shipped Test Suites (Sprint 2)
 
 - **Core**: unit tests beside the source for the machine model, parser, simulator, serialisation, and test-case modules. A public-API surface test (`index.test.ts`) fails whenever an export is added to or removed from the barrel without updating the expected list.
-- **Frontend**: unit tests for the machine store, the machine list UI/routes, and the simulation controller (`use-simulation`), plus component tests with React Testing Library. Playwright e2e specs cover the simulator (live playback, budget pause, cancel-on-edit), export, test cases, and diagram edge labels.
+- **Frontend**: unit tests for the machine store, the home page and editor routes, and the simulation controller (`use-simulation`), plus component tests with React Testing Library. Playwright e2e specs cover the simulator (live playback, budget pause, cancel-on-edit), export, test cases, and diagram edge labels.
 - **Backend**: controller, model, and schema tests run against Vitest mocks — no MongoDB instance is required (`mongodb-memory-server` was removed for AVX-less CI compatibility).
 
 ---
@@ -59,6 +59,8 @@ test: {
 ```
 
 - Frontend uses `jsdom` environment and enables Vitest globals
+- `src/test/setup.ts` gives jsdom a `matchMedia` in which width queries match, so components render their **desktop** layout, the one most tests are about. A test of the phone layout replaces `window.matchMedia` with one that matches nothing, and puts the original back afterwards (see `EditorRoute.layout.test.tsx`)
+- jsdom lays nothing out, so the setup file also supplies a no-op `ResizeObserver` and `Element.scrollTo`
 - `e2e/` directory is excluded from Vitest — Playwright handles that
 
 ### Test File Convention
@@ -71,6 +73,7 @@ test: {
 ```bash
 npm run test          # run once
 npm run test:watch    # watch mode
+npm run test:coverage # run once and report coverage
 ```
 
 ---
@@ -127,10 +130,22 @@ All tests run as part of the Gitea Actions CI pipeline on every pull request. Se
 - **Sprint 2** (delivered): UI *and* API testing — frontend unit suites and Playwright e2e specs, backend controller/model/schema tests
 - **Sprint 3**: Both UI and API testing — useful, extensive test suites
 
+### Measuring Coverage
+
+`npm run test:coverage` works the same in Core, Frontend and Backend. It runs the Vitest suite with `@vitest/coverage-v8`, prints a summary per file, and writes an HTML report to `coverage/index.html` that highlights the lines no test ran. `coverage/` is git-ignored. Only each package's own code is counted: tests, test setup and type declarations are left out, and so are the Frontend's `main.tsx` and the Backend's `index.ts`, which only start the app. The Playwright e2e specs are not measured.
+
+Coverage on `dev/sprint-3` on 2026-09-26:
+
+| Package | Statements | Branches | Functions | Lines |
+|---|---|---|---|---|
+| Core | 93.0% | 87.6% | 96.4% | 94.4% |
+| Frontend | 86.1% | 77.9% | 84.7% | 90.4% |
+| Backend | 90.1% | 81.6% | 93.4% | 91.1% |
+
 ---
 
 **Related**: [Coding Standards](coding-standards.md) | [CI/CD Pipeline](ci-cd-pipeline.md)
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

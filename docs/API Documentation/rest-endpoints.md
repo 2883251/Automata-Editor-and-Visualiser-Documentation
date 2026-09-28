@@ -22,7 +22,7 @@ curl http://localhost:4000/health
 
 ## Authenticated Endpoints
 
-All endpoints below require a valid Auth0 JWT sent as `Authorization: Bearer <token>`. The token's `sub` claim scopes every query; a machine **shared with** the caller can be read, but only its owner may modify or delete it, or manage its shares.
+All endpoints below require a valid Auth0 JWT sent as `Authorization: Bearer <token>`. The token's `sub` claim scopes every query; a machine **shared with** the caller can be read. An **editor** may also update it (`PUT`), but only its owner may rename or delete it, or manage its shares.
 
 ### `GET /api/me`
 
@@ -66,6 +66,8 @@ List items omit the heavy fields (`source`, `positions`, `testCases`) — fetch 
 ]
 ```
 
+With `?include=preview`, each item also carries its `source` and `positions`, enough to draw a thumbnail of its diagram without fetching machines one by one. Any other `include` value is refused with `VALIDATION_ERROR`, and without `include` the response is as above.
+
 #### `POST /api/machines`
 
 Creates a machine owned by the caller. Returns **201** with the full machine response.
@@ -84,7 +86,7 @@ Creates a machine owned by the caller. Returns **201** with the full machine res
 
 #### `GET /api/machines/:id`
 
-Full machine response, including its `testCases` — a recipient sees the owner's test cases too. `sharedWith` is only included when the caller is the owner — a recipient has no business knowing who else the machine was shared with.
+Full machine response, including its `testCases` — a recipient sees the owner's test cases too. `role` is the caller's own: `owner`, `editor` or `viewer`. `sharedWith` is only included when the caller is the owner — a recipient has no business knowing who else the machine was shared with.
 
 ```json
 {
@@ -95,7 +97,8 @@ Full machine response, including its `testCases` — a recipient sees the owner'
   "testCases": [{ "id": "t1", "input": "0110", "expectation": { "kind": "accepts" } }],
   "owner": "auth0|1234567890",
   "isOwner": true,
-  "sharedWith": ["auth0|9876543210"],
+  "role": "owner",
+  "sharedWith": [{ "sub": "auth0|9876543210", "role": "editor" }],
   "createdAt": "2026-09-13T10:00:00.000Z",
   "updatedAt": "2026-09-13T12:30:00.000Z"
 }
@@ -104,6 +107,8 @@ Full machine response, including its `testCases` — a recipient sees the owner'
 #### `PUT /api/machines/:id`
 
 Updates a machine. Every field is optional, and a field left out keeps its stored value, so a client can save one part of a machine without resending the rest. That also means a client that predates test cases cannot wipe them. Returns the updated machine response.
+
+A save that changes the source, positions, or test cases is also applied to the machine's collaboration room: to the open room if there is one, so everyone in it sees the save, or otherwise to the room state stored with the machine. See [WebSocket Events](websocket-events.md#the-room). A name-only update leaves the room alone.
 
 #### `PATCH /api/machines/:id`
 
@@ -117,33 +122,41 @@ Deletes the machine. Returns **204 No Content**.
 
 ## Sharing (`/api/machines/:id/shares`)
 
-Only a machine's **owner** may view, add, or revoke its shares. Ownership is checked before any email lookup, so a caller cannot use someone else's machine id to probe which emails have accounts.
+Only a machine's **owner** may view, add, change, or revoke its shares. Each person has a role: `viewer` (open and run the machine) or `editor` (also change it). Ownership is checked before any email lookup, so a caller cannot use someone else's machine id to probe which emails have accounts.
 
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/machines/:id/shares` | List who the machine is shared with |
 | `POST` | `/api/machines/:id/shares` | Share with a user by email |
+| `PATCH` | `/api/machines/:id/shares/:sub` | Change one user's role |
 | `DELETE` | `/api/machines/:id/shares/:sub` | Revoke one user's access |
+
+A change of role, a revoke, or deleting the machine also applies straight away to anyone who has the machine open in a collaboration room. See [WebSocket Events](websocket-events.md#access-changes-while-connected).
 
 #### `POST /api/machines/:id/shares`
 
 ```json
-{ "email": "classmate@example.com" }
+{ "email": "classmate@example.com", "role": "editor" }
 ```
 
 - The email is trimmed and lowercased, then resolved against the **users collection** — a recipient must have signed in to the app at least once. When two Auth0 identities share an email, the most recently active one wins.
-- Storing the share is a set-union on the machine's `sharedWith` list: sharing with someone who already has access is a no-op. Sharing never changes the machine's `updatedAt` (it changes who can see the machine, not the machine).
+- `role` is optional and defaults to `viewer`.
+- Storing the share is a set-union on the machine's `sharedWith` list, and `editors` for an editor. Sharing again with someone who already has access sets their role. Sharing never changes the machine's `updatedAt` (it changes who can see the machine, not the machine).
 - Returns the updated share list as user summaries:
 
 ```json
 [
-  { "sub": "auth0|9876543210", "email": "classmate@example.com", "name": "Classmate" }
+  { "sub": "auth0|9876543210", "email": "classmate@example.com", "name": "Classmate", "role": "editor" }
 ]
 ```
 
 #### `GET /api/machines/:id/shares`
 
 Same response shape as above. A `sub` with no user record still appears, with `null` email and name.
+
+#### `PATCH /api/machines/:id/shares/:sub`
+
+Body: `{ "role": "viewer" }` or `{ "role": "editor" }`. Only for someone the machine is already shared with; sharing with someone new goes through `POST`, by email. Returns the updated share list, or **404** if the machine does not exist, the caller does not own it, or it is not shared with that user.
 
 #### `DELETE /api/machines/:id/shares/:sub`
 
@@ -160,11 +173,14 @@ Lists machines other users have shared with the caller — summaries (no `source
     "name": "Binary counter",
     "owner": { "sub": "auth0|1234567890", "email": "owner@example.com", "name": "Owner" },
     "isOwner": false,
+    "role": "viewer",
     "createdAt": "2026-09-13T10:00:00.000Z",
     "updatedAt": "2026-09-13T12:30:00.000Z"
   }
 ]
 ```
+
+`?include=preview` works here as it does on `GET /api/machines`.
 
 ---
 
@@ -212,3 +228,4 @@ Malformed machine ids (not 24 hex characters) are rejected with `VALIDATION_ERRO
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
 Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].
+The list preview, collaboration-room saves, and share roles were documented with the assistance of: Claude Code [Claude Opus 5.5].

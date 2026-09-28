@@ -11,7 +11,7 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 | Dual editor — visual diagram + instruction code, kept in sync | Shipped (sprint 1) | [UI Design](../ui-design.md) |
 | Interactive state diagram — add/delete states, mark start/accepting/rejecting, draw transitions, reposition, auto-arrange | Shipped (sprint 1) | [UI Design](../ui-design.md) |
 | Instruction code editor with syntax highlighting and inline diagnostics | Shipped (sprint 1) | [UI Design](../ui-design.md) |
-| Machine management — create, save, open, rename, delete | Shipped (sprint 2) | [Machine Management](machine-management.md) |
+| Machine management — create, save, open, rename, delete; account storage, home page, explicit save and revert | Shipped (sprints 2 and 3) | [Machine Management](machine-management.md) |
 | TM simulation — run, pause, step, tape visualisation, resource usage | Shipped (sprint 2) | [Simulation & Playback](simulation.md) |
 | Export — diagram as image, instructions as a table | Shipped (sprint 2) | [Export](export.md) |
 
@@ -21,16 +21,16 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 |---|---|---|
 | Test cases — define inputs with expected outcomes, run them, inspect failures | Shipped (sprint 2) | [Test Cases](test-cases.md) |
 | Complexity plotting — time (steps) and space (cells) against input length | Shipped (sprint 2) | [Test Cases](test-cases.md) |
-| TM variants — multi-tape and multi-step machines; computational output | Shipped in Core 3.0.0; editor UI support in review | [TM Variants](tm-variants.md) |
-| Sharing — share a machine with another user by email | Shipped (sprint 2) | [Sharing](sharing.md) |
-| Debugger — step through a computation one configuration at a time | Step-wise playback shipped; the dedicated debugger epic (step backwards, pause/resume refinement) is in progress | [Simulation & Playback](simulation.md) |
+| TM variants — multi-tape and multi-step machines; computational output | Shipped (sprint 2) | [TM Variants](tm-variants.md) |
+| Sharing — share a machine by email as a viewer or an editor; copy a shared machine | Shipped (sprints 2 and 3) | [Sharing](sharing.md) |
+| Debugger — step through a computation, step back, and highlight the executing instruction | Shipped (sprint 3, [J1], [J3]) | [Simulation & Playback](simulation.md) |
 
 ## Advanced Features
 
 | Feature | Status |
 |---|---|
-| Nondeterministic machines with computation tree visualisation and branch traversal | Not started (tracked as [O1]-[O3]) |
-| Real-time collaborative editing | Not started (tracked as [N1]-[N3]) |
+| Nondeterministic machines with computation tree visualisation and branch traversal | Shipped (sprint 3, [O1]-[O3]) |
+| Real-time collaborative editing, with presence and connection recovery | Shipped (sprint 3, [N1]-[N5]); see [Sharing](sharing.md) and [WebSocket Events](../API%20Documentation/websocket-events.md) |
 
 ---
 
@@ -38,4 +38,4 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

@@ -42,8 +42,9 @@ The TM simulation engine (machine model, parser, simulator) lives in the `Automa
 | **React Flow** | State diagram visual editor | Purpose-built library for interactive node-and-edge diagrams. Supports dragging, custom node rendering, and edge drawing — maps directly to the state diagram requirement. |
 | **Monaco Editor** | Code/instruction editor | The same editor engine that powers VS Code. Provides syntax highlighting, autocompletion, and inline error markers for the TM instruction language. |
 | **Tailwind CSS** | Styling | Utility-first approach for rapid UI development, consistent design tokens, and responsive layouts without writing custom CSS files. |
-| **React Router** | Client-side routing | Standard routing solution for React SPAs. Handles navigation between machine list, editor, visualiser, and settings views. |
+| **React Router** | Client-side routing | Standard routing solution for React SPAs. Handles navigation between the home page, the editor, and sign-in. |
 | **html-to-image** | Diagram export (PNG/SVG) | Client-side rendering of the state diagram to raster/vector images for the export feature. Added in sprint 2; no server-side rendering involved. |
+| **VS Code codicons** (`@vscode/codicons`) | Interface icons | Added in sprint 3 when the text buttons became icon buttons with tooltips. The same icon set as VS Code, so the debugger-style controls (run, step, step back) look familiar. Each SVG is imported on its own, so only the icons in use are bundled, and no icon font is loaded. Licensed CC-BY-4.0; the attribution is in the Frontend README. |
 
 ### State management
 
@@ -159,6 +160,7 @@ No custom authentication logic is written. Auth0 is a mature, audited identity p
 | Styling | Tailwind CSS |
 | Routing | React Router |
 | Diagram export | html-to-image |
+| Icons | VS Code codicons |
 | Backend framework | Express |
 | ORM / ODM | Mongoose |
 | Database | MongoDB Atlas (managed cloud) |
@@ -182,4 +184,4 @@ No custom authentication logic is written. Auth0 is a mature, audited identity p
 
 ---
 
-**AI Declaration:** The preceding document was generated and reviewed with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated and reviewed with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

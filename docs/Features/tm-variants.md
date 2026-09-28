@@ -2,7 +2,7 @@
 
 Sprint 2 extended the Core package to 3.0.0 with three closely related capabilities: machines with **several tapes** ([L3]), transitions that move a head **several cells in one step** ([L5]), and reading a computational machine's **output from its tape** ([L2]).
 
-> Status: these capabilities are **shipped in the Core package (3.0.0)**. The editor UI for authoring variant machines is still in review — the editor today authors single-tape machines.
+> Status: **shipped** in the Core package (3.0.0) and in the editor. Set the number of tapes in the **Machine** view of the side bar (the gear icon on the activity bar) before adding transitions. The diagram's transition editor then asks for one read, write and move per tape, and an optional distance for each move.
 
 ---
 
@@ -47,4 +47,4 @@ The machine model, parser, simulator, and serialisation changes behind these fea
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

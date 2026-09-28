@@ -1,16 +1,24 @@
 # Simulation & Playback
 
-The simulation pane turns the machine you are editing into a running computation: type an input, press Run, and watch the tape, the current state, and the active transition update as the machine executes. Shipped in sprint 2 ([G2]-[G5]).
+The **Simulation** panel, along the bottom of the editor, turns the machine you are editing into a running computation: type an input, press Run, and watch the tape, the current state, and the active transition update as the machine executes. Shipped in sprint 2 ([G2]-[G5]).
 
 ---
 
 ## Running a Computation
 
-1. Type an input string into the simulation pane's input box (an empty input is valid — the tape is simply all blanks).
+1. Type an input string into the Simulation panel's input box (an empty input is valid — the tape is simply all blanks).
 2. Press **Run**. The machine executes at the chosen pace, one transition at a time.
 3. Watch the outcome: **Accepted** (the machine reached an accepting state), **Rejected** (it reached an explicit rejecting state), or **Stuck** (no transition was defined for what the head was reading).
 
-The distinction between *rejected* and *stuck* matters to learners: a machine that "rejects" by having no rule for a symbol is telling you something different from one that walks into a rejecting state, and the simulation pane reports the two separately.
+The distinction between *rejected* and *stuck* matters to learners: a machine that "rejects" by having no rule for a symbol is telling you something different from one that walks into a rejecting state, and the Simulation panel reports the two separately.
+
+## The Panel
+
+- The input, the playback controls, the speed, and the current state, steps and cells visited sit in one row. The tape runs under them across the full width.
+- The panel's header collapses it to a single line, to give the editors more room. While collapsed, its **Run** button opens the panel and starts the run.
+- Its top edge can be dragged, or moved with the arrow keys, to make it taller or shorter. The editor remembers the height.
+- **Opening a test case in the simulator** opens the panel, loads the case's input, and puts the cursor in it. See [Test Cases](test-cases.md#inspecting-a-failure-i3).
+- A **nondeterministic** machine shows its computation tree here instead of a single tape, in a taller panel, with the selected branch and its tape beside the tree.
 
 ## Playback Controls
 
@@ -37,7 +45,7 @@ This checkpoint exists purely to keep the interface responsive; it is not a verd
 
 ## What the Visualiser Shows
 
-- **Tape**: the tape contents render across the pane and scroll to follow the head; the cell written most recently gets a brief emphasis.
+- **Tape**: the tape contents render across the panel and scroll to keep the head in the middle, also when the panel is opened or resized; the cell written most recently gets a brief emphasis.
 - **Current state**: highlighted on the state diagram.
 - **Active transition**: the edge just taken is highlighted on the diagram.
 - **Resource usage (G5)**: the step counter and a live count of **distinct tape cells the head has visited** — the space the computation has actually touched, shown as it grows.
@@ -52,4 +60,4 @@ The simulation drives the Core package's single-step `step()` function on a time
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

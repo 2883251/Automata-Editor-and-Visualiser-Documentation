@@ -45,7 +45,7 @@ The Automata Editor is an educational platform designed for computer science stu
 
 -   🎨 **[UI Design](ui-design.md)**
     
-    Visual mockup of the application's three-pane editor interface.
+    How the editor is laid out: the two editors, the simulation, the side bar, the status bar, and the phone layout.
 
 -   ⚙️ **[Technical Architecture](Technical%20Architecture/index.md)**
     
@@ -91,4 +91,4 @@ The Automata Editor is built with a modern, non-monolithic architecture:
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

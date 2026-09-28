@@ -4,6 +4,8 @@ Test cases let you state what a machine *should* do for specific inputs, run the
 
 ---
 
+The test cases live in the **Test cases** view of the side bar. The beaker icon on the activity bar, down the editor's right edge, opens it; it is the view that is open to begin with.
+
 ## Authoring Cases (I1)
 
 A test case pairs an **input string** with an **expectation**:
@@ -17,7 +19,7 @@ A test case pairs an **input string** with an **expectation**:
 
 ## Running a Suite (I2)
 
-Run the suite from the test-case panel: cases execute **one at a time**, yielding between cases, so the page never freezes while a long suite runs.
+Run the suite with **Check all test cases**: cases execute **one at a time**, yielding between cases, so the page never freezes while a long suite runs.
 
 | Verdict | Meaning |
 |---|---|
@@ -28,11 +30,12 @@ Run the suite from the test-case panel: cases execute **one at a time**, yieldin
 
 - The per-case step budget is **terminal** here: an *inconclusive* verdict, deliberately distinct from the simulator's budget *pause* (see [Simulation & Playback](simulation.md)), so raising the interactive checkpoint can never silently redefine a test verdict.
 - A suite run can be cancelled mid-way.
-- A summary line totals the passed / failed / excluded cases.
+- The **status bar** along the bottom of the editor shows progress while a check runs, then totals the passed, failed and inconclusive cases (and any not checked). Choosing it opens the Test cases view.
+- When some cases are inconclusive, a note next to the list says why and suggests opening one in the simulator to keep stepping.
 
 ## Inspecting a Failure (I3)
 
-A failing final-tape expectation shows the **first cell where the tape diverged** from the expected value. Any failure can be opened in the simulator preloaded with that case's input, so you can step through and see why the machine disagrees.
+A failing final-tape expectation shows the **first cell where the tape diverged** from the expected value. Any failure can be opened in the simulator preloaded with that case's input, so you can step through and see why the machine disagrees. This opens the Simulation panel along the bottom, if it was collapsed, and puts the cursor in its input.
 
 ## Complexity Plots (K2)
 
@@ -49,4 +52,4 @@ From a suite's measured results, open the complexity plot:
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].
