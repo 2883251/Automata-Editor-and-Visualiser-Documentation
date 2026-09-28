@@ -52,7 +52,7 @@ Returns the authenticated user's identity claims from the token.
 
 #### `GET /api/machines`
 
-List items omit the heavy fields (`source`, `positions`) — fetch one machine by id for full content. Sorted by `updatedAt` descending.
+List items omit the heavy fields (`source`, `positions`, `testCases`) — fetch one machine by id for full content. Sorted by `updatedAt` descending.
 
 ```json
 [
@@ -74,15 +74,17 @@ Creates a machine owned by the caller. Returns **201** with the full machine res
 {
   "name": "Binary counter",
   "source": "states: ...\nstart: q0\n...",
-  "positions": { "q0": { "x": 100, "y": 200 } }
+  "positions": { "q0": { "x": 100, "y": 200 } },
+  "testCases": [{ "id": "t1", "input": "0110", "expectation": { "kind": "accepts" } }]
 }
 ```
 
 - `name` is optional (defaults to `Untitled machine`, max 200 chars after trim); `source` and `positions` are required.
+- `testCases` is optional (defaults to none) and at most 500 entries. Each needs an `id` (up to 100 characters), an `input` (may be empty, up to 10,000 characters), and an `expectation` whose `kind` is `accepts`, `rejects`, or `final-tape` — the last with a `tape` (up to 10,000 characters). Only the shape is checked; a malformed case fails the whole request with `VALIDATION_ERROR`.
 
 #### `GET /api/machines/:id`
 
-Full machine response. `sharedWith` is only included when the caller is the owner — a recipient has no business knowing who else the machine was shared with.
+Full machine response, including its `testCases` — a recipient sees the owner's test cases too. `sharedWith` is only included when the caller is the owner — a recipient has no business knowing who else the machine was shared with.
 
 ```json
 {
@@ -90,6 +92,7 @@ Full machine response. `sharedWith` is only included when the caller is the owne
   "name": "Binary counter",
   "source": "states: ...\nstart: q0\n...",
   "positions": { "q0": { "x": 100, "y": 200 } },
+  "testCases": [{ "id": "t1", "input": "0110", "expectation": { "kind": "accepts" } }],
   "owner": "auth0|1234567890",
   "isOwner": true,
   "sharedWith": ["auth0|9876543210"],
@@ -100,7 +103,7 @@ Full machine response. `sharedWith` is only included when the caller is the owne
 
 #### `PUT /api/machines/:id`
 
-Full-replacement update with the same body as create — matching the frontend's save behaviour. Returns the updated machine response.
+Updates a machine. Every field is optional, and a field left out keeps its stored value, so a client can save one part of a machine without resending the rest. That also means a client that predates test cases cannot wipe them. Returns the updated machine response.
 
 #### `PATCH /api/machines/:id`
 
@@ -148,7 +151,7 @@ Revokes that user's access. Returns **204** whether or not the user had access; 
 
 #### `GET /api/machines/shared-with-me`
 
-Lists machines other users have shared with the caller — summaries (no `source` or `positions`) with the owner identified, sorted by `updatedAt` descending.
+Lists machines other users have shared with the caller — summaries (no `source`, `positions`, or `testCases`) with the owner identified, sorted by `updatedAt` descending.
 
 ```json
 [
@@ -208,3 +211,4 @@ Malformed machine ids (not 24 hex characters) are rejected with `VALIDATION_ERRO
 ---
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].

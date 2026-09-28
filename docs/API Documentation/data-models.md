@@ -136,15 +136,21 @@ Key runtime types (all exported from the package root):
 
 ## API Payload Shape
 
-The machine persistence API (sprint 2) does **not** transfer `MachineDefinition` objects. It stores the machine as the frontend holds it — the **instruction-language `source` text plus diagram layout `positions`** — and leaves semantic validation to the Core package in the client:
+The machine persistence API (sprint 2) does **not** transfer `MachineDefinition` objects. It stores the machine as the frontend holds it — the **instruction-language `source` text, diagram layout `positions`, and the machine's `testCases`** (sprint 3, M3b) — and leaves semantic validation to the Core package in the client:
 
 ```json
 {
   "name": "Binary counter",
   "source": "states: q0, q1\nstart: q0\n...",
-  "positions": { "q0": { "x": 100, "y": 200 } }
+  "positions": { "q0": { "x": 100, "y": 200 } },
+  "testCases": [
+    { "id": "t1", "input": "0110", "expectation": { "kind": "accepts" } },
+    { "id": "t2", "input": "01", "expectation": { "kind": "final-tape", "tape": "10" } }
+  ]
 }
 ```
+
+A stored test case is Core's `TestCase` plus the `id` the frontend gives it, so a list can tell cases apart.
 
 See [REST Endpoints](rest-endpoints.md) for the full request and response shapes.
 
@@ -162,6 +168,7 @@ The backend persists machines and user records in **MongoDB** via Mongoose. The 
 | `name` | string | default `'Untitled machine'`, trimmed, max 200 chars |
 | `source` | string | required — the instruction-language source text |
 | `positions` | `Map<string, {x, y}>` | diagram layout positions for each state |
+| `testCases` | `{ id, input, expectation }[]` | default `[]`; `expectation.kind` is `accepts`, `rejects`, or `final-tape` (with a `tape`); `input` may be empty. Machines saved before sprint 3 have none |
 | `sharedWith` | string[] | Auth0 `sub`s of share recipients |
 | `createdAt` / `updatedAt` | dates | Mongoose-managed timestamps |
 
@@ -233,3 +240,4 @@ MongoDB is schemaless by default, but the application still needs structure:
 ---
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].
