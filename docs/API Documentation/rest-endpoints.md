@@ -80,7 +80,7 @@ Creates a machine owned by the caller. Returns **201** with the full machine res
 ```
 
 - `name` is optional (defaults to `Untitled machine`, max 200 chars after trim); `source` and `positions` are required.
-- `testCases` is optional (defaults to none) and at most 500 entries. Each needs an `id`, an `input` (may be empty), and an `expectation` whose `kind` is `accepts`, `rejects`, or `final-tape` — the last with a `tape`. Only the shape is checked; a malformed case fails the whole request with `VALIDATION_ERROR`.
+- `testCases` is optional (defaults to none) and at most 500 entries. Each needs an `id` (up to 100 characters), an `input` (may be empty, up to 10,000 characters), and an `expectation` whose `kind` is `accepts`, `rejects`, or `final-tape` — the last with a `tape` (up to 10,000 characters). Only the shape is checked; a malformed case fails the whole request with `VALIDATION_ERROR`.
 
 #### `GET /api/machines/:id`
 
@@ -103,7 +103,7 @@ Full machine response, including its `testCases` — a recipient sees the owner'
 
 #### `PUT /api/machines/:id`
 
-Full-replacement update with the same body as create — matching the frontend's save behaviour — except that leaving `testCases` out keeps the stored ones, so a client that predates test cases cannot wipe them. Returns the updated machine response.
+Updates a machine. Every field is optional, and a field left out keeps its stored value, so a client can save one part of a machine without resending the rest. That also means a client that predates test cases cannot wipe them. Returns the updated machine response.
 
 #### `PATCH /api/machines/:id`
 
