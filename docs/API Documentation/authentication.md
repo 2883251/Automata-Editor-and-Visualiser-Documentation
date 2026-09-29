@@ -74,8 +74,43 @@ If `AUTH0_ISSUER_BASE_URL` or `AUTH0_AUDIENCE` is unset (common before the tenan
 
 ---
 
+## API Key Authentication
+
+The marking endpoint (`POST /api/mark`) is designed for external callers — grading scripts, CI pipelines, LMS integrations — that operate without a browser session. These callers authenticate with an **API key** rather than an Auth0 JWT.
+
+### How it works
+
+1. A signed-in user creates an API key through the editor UI (or `POST /api/api-keys` with their JWT). The plain-text key is returned once; the server stores only a SHA-256 hash.
+2. The caller sends the key in the `X-API-Key` header (configurable via the `API_KEY_HEADER_NAME` environment variable).
+3. The backend hashes the received value, looks it up in the `api_keys` collection, and attaches the owning user's `sub` to the request.
+
+### Error responses
+
+| Condition | Status | Error code |
+|---|---|---|
+| `X-API-Key` header is missing | `401` | `UNAUTHENTICATED` |
+| Key is not recognised (hash not found) | `403` | `FORBIDDEN` |
+
+### Configuration
+
+| Variable | Purpose |
+|---|---|
+| `API_KEY_HEADER_NAME` | HTTP header name for the API key (default: `X-API-Key`) |
+
+### Security model
+
+- Keys are scoped to the user who created them. Every marking request is attributed to a specific user via `sub`.
+- The plain-text key is never stored. Only the SHA-256 hash is kept in the database, so a database compromise does not expose usable keys.
+- Revoking a key (`DELETE /api/api-keys/:id`) deletes the document immediately. Subsequent requests with that key receive `403`.
+- A missing or another user's key returns `404` on revocation rather than `403`, to avoid leaking the existence of keys belonging to other users.
+
+See [REST Endpoints](rest-endpoints.md#marking-apimark) for the marking endpoint request and response shapes.
+
+---
+
 **Related**: [REST Endpoints](rest-endpoints.md) | [Data Models](data-models.md) | [Backend Architecture](../Technical%20Architecture/backend-architecture.md)
 
 ---
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+API key authentication was documented with the assistance of: Qoder IDE [auto].
