@@ -31,6 +31,8 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 |---|---|
 | Nondeterministic machines with computation tree visualisation and branch traversal | Shipped (sprint 3, [O1]-[O3]) |
 | Real-time collaborative editing, with presence and connection recovery | Shipped (sprint 3, [N1]-[N5]); see [Sharing](sharing.md) and [WebSocket Events](../API%20Documentation/websocket-events.md) |
+| API key management — create, list, and revoke keys for external callers | Shipped (sprint 3, [A8]); see [API Key Management](../API%20Documentation/rest-endpoints.md#api-key-management-apiapi-keys) |
+| Marking endpoint — run test cases against a machine via API key for grading and CI | Shipped (sprint 3, [A7]); see [Marking](../API%20Documentation/rest-endpoints.md#marking-apimark) |
 
 ---
 
@@ -39,3 +41,4 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 ---
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].
+API key management and the marking endpoint were documented with the assistance of: Qoder IDE [auto].

@@ -184,6 +184,171 @@ Lists machines other users have shared with the caller — summaries (no `source
 
 ---
 
+## API Key Management (`/api/api-keys`)
+
+API keys let external tools and scripts (grading systems, CI pipelines, LMS integrations) authenticate to the marking endpoint without a browser session. Keys are scoped to the user who creates them and stored as SHA-256 hashes — the plain-text value is returned exactly once at creation and cannot be retrieved later.
+
+All three endpoints require a valid Auth0 JWT (`Authorization: Bearer <token>`).
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/api-keys` | Create a new API key |
+| `GET` | `/api/api-keys` | List the caller's API keys (metadata only) |
+| `DELETE` | `/api/api-keys/:id` | Revoke an API key |
+
+#### `POST /api/api-keys`
+
+Creates a new API key. The plain-text key is returned **exactly once** — the server stores only a SHA-256 hash and cannot display it again.
+
+```json
+{ "label": "Sprint 4 marking" }
+```
+
+- `label` is required (1–200 characters after trimming).
+- Returns **201 Created**:
+
+```json
+{
+  "id": "66f8a1b2c3d4e5f6a7b8c9d0",
+  "label": "Sprint 4 marking",
+  "key": "e3b0c44298fc1c149afbf4c8996fb924...",
+  "createdAt": "2026-09-22T10:30:00.000Z"
+}
+```
+
+#### `GET /api/api-keys`
+
+Lists the caller's API keys. Only metadata is returned — the key value is never included.
+
+```json
+[
+  {
+    "id": "66f8a1b2c3d4e5f6a7b8c9d0",
+    "label": "Sprint 4 marking",
+    "createdAt": "2026-09-22T10:30:00.000Z"
+  }
+]
+```
+
+#### `DELETE /api/api-keys/:id`
+
+Revokes (deletes) an API key. Returns **204 No Content**. The lookup is scoped to the caller's `sub`, so a missing or another user's key returns **404** rather than **403** to avoid leaking existence.
+
+---
+
+## Marking (`/api/mark`)
+
+The marking endpoint lets external callers submit a Turing machine together with test cases and receive per-case results. It is designed for grading systems, CI pipelines, and LMS integrations that operate without a browser session.
+
+Unlike the machine and sharing endpoints, marking uses **API key authentication** (not JWT). The caller sends a key in the `X-API-Key` header (configurable via `API_KEY_HEADER_NAME`). See [Authentication & Security](authentication.md#api-key-authentication) for details.
+
+### `POST /api/mark`
+
+Runs test cases against a machine and returns per-case results with a summary.
+
+- **Authentication**: `X-API-Key` header (not JWT)
+- **Content-Type**: `application/json`
+
+#### Request body
+
+```json
+{
+  "machine": {
+    "kind": "source",
+    "text": "states:\n  q0\n  q1\nstart: q0\naccept: q1\ntape_alphabet: '0', '_'\ninput_alphabet: '0'\ntransitions:\n  (q0, '0') -> (q1, '0', R)\n"
+  },
+  "testCases": [
+    { "input": "0", "expectation": { "kind": "accepts" } },
+    { "input": "00", "expectation": { "kind": "rejects" } },
+    { "input": "0", "expectation": { "kind": "final-tape", "tape": "0" } }
+  ],
+  "maxSteps": 1000
+}
+```
+
+The `machine` field accepts two formats via a discriminated union:
+
+| `kind` | Fields | Description |
+|---|---|---|
+| `source` | `text` (string, non-empty) | Raw instruction language text, parsed by the Core lexer and parser |
+| `serialised` | `data` (object) | A serialised machine document (the JSON shape exported by the editor), passed to the Core `deserialise` function |
+
+Each test case has an `input` string and an `expectation`:
+
+| Expectation `kind` | Meaning |
+|---|---|
+| `accepts` | The machine should halt in an accepting state |
+| `rejects` | The machine should halt in a rejecting state or get stuck |
+| `final-tape` | The machine should halt with `tape` matching the tape contents after the run |
+
+`maxSteps` is optional. When omitted, the Core default (`DEFAULT_STEP_LIMIT`) applies. The ceiling is 10,000,000; values above it are rejected with `VALIDATION_ERROR`.
+
+#### Response
+
+Returns **200 OK** with per-case results and a summary:
+
+```json
+{
+  "results": [
+    {
+      "testCase": { "input": "0", "expectation": { "kind": "accepts" } },
+      "outcome": "accepted",
+      "passed": true,
+      "measurement": { "kind": "measured", "inputLength": 1, "steps": 1, "cells": 2 }
+    },
+    {
+      "testCase": { "input": "00", "expectation": { "kind": "rejects" } },
+      "outcome": "stuck",
+      "passed": true,
+      "measurement": { "kind": "measured", "inputLength": 2, "steps": 0, "cells": 1 }
+    },
+    {
+      "testCase": { "input": "0", "expectation": { "kind": "final-tape", "tape": "0" } },
+      "outcome": "accepted",
+      "passed": false,
+      "measurement": { "kind": "measured", "inputLength": 1, "steps": 1, "cells": 2 },
+      "comparison": {
+        "expected": "0",
+        "actual": "0",
+        "origin": 0,
+        "firstDifference": -1,
+        "firstDifferencePosition": -1
+      }
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "passed": 2,
+    "failed": 1,
+    "excluded": 0
+  }
+}
+```
+
+Each result entry includes:
+
+- `testCase` — the input and expectation echoed back
+- `outcome` — one of `accepted`, `rejected`, `stuck`, `exceeded-limit`
+- `passed` — whether the outcome matched the expectation
+- `measurement` — resource usage (`inputLength`, `steps`, `cells`), or `excluded` with a `reason` when the step budget ran out
+- `comparison` — present only for `final-tape` expectations; shows `expected`, `actual`, `firstDifference`, and `firstDifferencePosition`
+
+The `summary` counts `total`, `passed`, `failed`, and `excluded` (cases that exceeded the step budget).
+
+#### Marking error responses
+
+| Code | Status | Meaning |
+|---|---|---|
+| `UNAUTHENTICATED` | `401` | Missing `X-API-Key` header |
+| `FORBIDDEN` | `403` | Unrecognised API key |
+| `VALIDATION_ERROR` | `400` | Request body failed schema validation (empty test cases, `maxSteps` above ceiling, etc.) |
+| `PARSE_ERROR` | `400` | Source text contains syntax errors; `issues` array lists each parse error message |
+| `INVALID_MACHINE` | `400` | The machine definition is semantically invalid (undefined states, malformed serialised data) |
+
+No data is persisted. The endpoint is a pure computation — nothing is written to the database.
+
+---
+
 ## Error Format
 
 JSON error responses share a consistent shape:
@@ -197,11 +362,14 @@ JSON error responses share a consistent shape:
 
 | Code | Status | Meaning |
 |---|---|---|
-| `UNAUTHENTICATED` | `401` | A protected route was reached but the caller's claims could not be read from the token |
-| `NOT_FOUND` | `404` | Machine not found, or caller does not own it (ownership failures are indistinguishable from missing machines) |
+| `UNAUTHENTICATED` | `401` | A protected route was reached but the caller's claims could not be read from the token, or the `X-API-Key` header is missing on the marking endpoint |
+| `FORBIDDEN` | `403` | The API key in the `X-API-Key` header is not recognised (marking endpoint only) |
+| `NOT_FOUND` | `404` | Machine not found, or caller does not own it (ownership failures are indistinguishable from missing machines); also returned for API key revocation of a missing or another user's key |
 | `USER_NOT_FOUND` | `404` | No user with that email has signed in yet (sharing) |
 | `CANNOT_SHARE_WITH_SELF` | `400` | The owner cannot be their own share recipient |
 | `VALIDATION_ERROR` | `400` | Request body or path parameters failed Zod validation; includes `issues: [{ path, message }]` |
+| `PARSE_ERROR` | `400` | Source text contains syntax errors (marking endpoint); includes `issues` array |
+| `INVALID_MACHINE` | `400` | Machine definition is semantically invalid (marking endpoint) |
 
 Two authentication edge cases are handled at the middleware level, before any controller runs:
 
@@ -229,3 +397,4 @@ Malformed machine ids (not 24 hex characters) are rejected with `VALIDATION_ERRO
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
 Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].
 The list preview, collaboration-room saves, and share roles were documented with the assistance of: Claude Code [Claude Opus 5.5].
+API key management and the marking endpoint were documented with the assistance of: Qoder IDE [auto].
