@@ -21,7 +21,7 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 |---|---|---|
 | Test cases — define inputs with expected outcomes, run them, inspect failures | Shipped (sprint 2) | [Test Cases](test-cases.md) |
 | Complexity plotting — time (steps) and space (cells) against input length | Shipped (sprint 2) | [Test Cases](test-cases.md) |
-| TM variants — multi-tape and multi-step machines; computational output | Shipped (sprint 2) | [TM Variants](tm-variants.md) |
+| TM variants — multi-tape and multi-step machines; computational output; stationary moves | Shipped (sprint 2); stationary moves in sprint 4 | [TM Variants](tm-variants.md) |
 | Sharing — share a machine by email as a viewer or an editor; copy a shared machine | Shipped (sprints 2 and 3) | [Sharing](sharing.md) |
 | Debugger — step through a computation, step back, and highlight the executing instruction | Shipped (sprint 3, [J1], [J3]) | [Simulation & Playback](simulation.md) |
 

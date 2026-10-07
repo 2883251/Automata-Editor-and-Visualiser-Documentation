@@ -31,10 +31,11 @@ export type Symbol = string & { readonly [symbolBrand]: 'Symbol' }
 Head movement direction after a transition.
 
 ```ts
-export type Direction = 'L' | 'R'
+export type Direction = 'L' | 'R' | 'S'
 ```
 
-- Runtime guard: `isDirection(value)` — returns `true` for `'L'` or `'R'`
+- `'S'` (since Core 4.0.0) is a head that stays on the cell it just wrote.
+- Runtime guard: `isDirection(value)` — returns `true` for `'L'`, `'R'`, or `'S'`
 
 ### `Transition`
 
@@ -44,8 +45,8 @@ A single transition in a Turing machine's transition function. Since Core 3.0.0 
 |---|---|---|
 | `reads` | `readonly [Symbol, ...Symbol[]]` | Symbol that must be under each tape's head for this transition to apply, in tape order |
 | `writes` | `readonly [Symbol, ...Symbol[]]` | Symbol to write on each tape in place of the read symbol |
-| `directions` | `readonly [Direction, ...Direction[]]` | Head movement direction (`'L'` or `'R'`) per tape |
-| `distances` | `readonly [number, ...number[]]` *(optional)* | Cells to move per tape; defaults to `1`. For multi-step machines |
+| `directions` | `readonly [Direction, ...Direction[]]` | Head movement direction (`'L'`, `'R'`, or `'S'` to stay) per tape |
+| `distances` | `readonly [number, ...number[]]` *(optional)* | Cells to move per tape; defaults to `1`. For multi-step machines. A tape that stays must hold `1`, since a stay has no distance |
 | `to` | `StateId` | State to enter after the transition |
 
 Helpers:

@@ -44,6 +44,10 @@ A Turing Machine variant with multiple independent tapes, each with its own read
 
 A Turing Machine variant where a single transition can move a head several cells (an optional per-tape distance) in one transition application. Supported by the Core package's instruction language since 3.0.0.
 
+## Stationary Move
+
+A transition action that writes a symbol and leaves the head on the same cell, written with the direction `S`. It counts as one step and takes no distance. Supported by the Core package since 4.0.0.
+
 ## Nondeterministic Turing Machine (NTM)
 
 A Turing Machine variant where a configuration can have multiple possible next configurations. The machine accepts if at least one computation path leads to acceptance.

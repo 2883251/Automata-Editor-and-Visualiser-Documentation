@@ -69,6 +69,7 @@ transitions:
 
 - `tapes: N` (default `1`) declares the tape count; programs written in the single-tape syntax parse unchanged.
 - A per-tape action may carry an optional **distance** after its direction (`(q0, 'a') -> (q1, 'a', R, 4)` moves that tape's head 4 cells in one step). Omitted means one cell, exactly as before.
+- The direction `S` (4.0.0) keeps that tape's head on the same cell for one step. It takes no distance: `S, 3` is a parse error, and `createMachine` rejects a stay whose `distances` entry is not `1`. `effectiveDistance()` returns `0` for it.
 - Full EBNF: `src/parser/grammar.md` in the Core repository.
 
 ### Semantic validation (B4)

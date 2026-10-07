@@ -22,6 +22,7 @@ One row per transition, sorted by state then read symbol so the output is stable
 | q0 | a | q1 | b | R |
 
 - A transition that moves the head several cells in one step shows the distance alongside the direction (e.g. `R4`).
+- A head that stays shows as `S`, with no distance.
 - A caption line names the machine's start, accepting, and rejecting states.
 
 ## Delivery Formats

@@ -1,8 +1,8 @@
-# TM Variants: Multi-Tape, Multi-Step, and Output
+# TM Variants: Multi-Tape, Multi-Step, Stationary Moves, and Output
 
-Sprint 2 extended the Core package to 3.0.0 with three closely related capabilities: machines with **several tapes** ([L3]), transitions that move a head **several cells in one step** ([L5]), and reading a computational machine's **output from its tape** ([L2]).
+Sprint 2 extended the Core package to 3.0.0 with three closely related capabilities: machines with **several tapes** ([L3]), transitions that move a head **several cells in one step** ([L5]), and reading a computational machine's **output from its tape** ([L2]). Sprint 4 added **stationary moves**, where a head stays where it is ([L7], [L8]).
 
-> Status: **shipped** in the Core package (3.0.0) and in the editor. Set the number of tapes in the **Machine** view of the side bar (the gear icon on the activity bar) before adding transitions. The diagram's transition editor then asks for one read, write and move per tape, and an optional distance for each move.
+> Status: **shipped** in the Core package (3.0.0) and in the editor. Set the number of tapes in the **Machine** view of the side bar (the gear icon on the activity bar) before adding transitions. The diagram's transition editor then asks for one read, write and move per tape, and an optional distance for each move. Stationary moves need Core 4.0.0.
 
 ---
 
@@ -32,6 +32,20 @@ A per-tape action may carry an optional **distance** after its direction:
 ```
 
 This moves that tape's head 4 cells in a **single transition application** — one step of the computation, counted as one. Omitted distances mean one cell, exactly as before, and each tape's action states its distance independently.
+
+## Stationary Moves (L7, L8)
+
+The direction `S` leaves that tape's head on the cell it just wrote:
+
+```text
+(q0, '0') -> (q1, '1', S)
+(q0, '0', '_') -> (q1, '1', R, 2; '0', S)
+```
+
+- A stay is **one step**. It writes the symbol and the head does not move, so it adds no cell to the space count.
+- It works on any tape, beside `L` and `R` moves on other tapes of the same transition.
+- A stay has no distance: `S, 3` is an error in the instruction editor.
+- In the diagram's transition editor, choose **Stay** in the **Move** list. The distance field is hidden for that tape, and the edge label shows `S`.
 
 ## Computational Output (L2)
 
