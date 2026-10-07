@@ -66,12 +66,13 @@ Key implementation details:
 | Component | Purpose |
 |---|---|
 | `MachineCard` | A home page card: diagram thumbnail, name, and actions. Also `NewMachineCard` and the `CardGrid` layout |
-| `NameMachineDialog` | Modal that asks for a machine's name before New, opening an example, a copy, or the first save |
+| `NameMachineDialog` | Modal that asks for a machine's name before New, opening an example, a copy, or the first save, and when a home page card is renamed |
 
 ### UI Components (`src/components/ui/` and `src/components/icons/`)
 
 | Component | Purpose |
 |---|---|
+| `ConfirmDialog` | Modal that asks before something that cannot be undone: deleting a machine, replacing unsaved work, or Revert. Used in place of the browser's `window.confirm`. Cancel is focused first, Escape cancels, and focus returns to the control that opened it |
 | `IconButton` | Icon-only button whose accessible name is its label, plus any reason it is unavailable |
 | `Tooltip` | Hover and keyboard-focus tooltip, rendered in a portal so a scrolling panel cannot clip it |
 | `Icon` | A VS Code codicon, imported one SVG at a time |
