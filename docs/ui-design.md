@@ -16,7 +16,7 @@ The mockup above is the original three-pane design from sprint 1. The sections b
 | **Simulation** | Along the bottom, under the editors | The input, the playback controls, the speed, and the tape across the full width. For a nondeterministic machine, the computation tree instead. |
 | **Side bar** | The right edge | One of two views at a time: **Test cases** or **Machine** (the tape count, the Nondeterministic setting, and both alphabets). |
 | **Status bar** | Along the very bottom | Whether the instructions parse, and how the last check of the test cases went. |
-| **Navigation bar** | Along the top | Home, the document actions (New, Save, Revert, Share, Export), the machine's name, colour mode, and signing in. |
+| **Navigation bar** | Along the top | Home, the document actions (New, Save, Revert, Share, Export), the machine's name, help, colour mode, and signing in. |
 
 ### Arranging the Editors
 
@@ -50,7 +50,7 @@ The arrangement, the sizes, which side bar view is open, and whether the Simulat
 A phone has no room to show several areas at once, so the editor shows **one view at a time** (below 768px wide):
 
 - A **tab bar** along the bottom switches between **Diagram**, **Code**, **Run**, **Tests** and **Machine**. The status bar sits just above it.
-- The **menu** button in the navigation bar opens a list over the page: the machine's name, then Home, New, Save, Share and Export, each with its name in words, and colour mode and signing in at the bottom. An action that is unavailable says why under its name. Choosing an action, pressing Escape, or tapping outside closes the menu.
+- The **menu** button in the navigation bar opens a list over the page: the machine's name, then Home, New, Save, Share, Export and Help, each with its name in words, and colour mode and signing in at the bottom. An action that is unavailable says why under its name. Choosing an action, pressing Escape, or tapping outside closes the menu.
 - The first time the editor opens on a phone, a notice says it **works best on a bigger screen** and can still be used there. It blocks nothing, and once dismissed it stays away in that browser.
 
 ---
