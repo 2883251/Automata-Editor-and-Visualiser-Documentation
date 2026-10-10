@@ -129,6 +129,37 @@ React Flow's built-in variables (`--xy-background-color`, `--xy-edge-label-backg
 
 ---
 
+## Responsiveness
+
+The editor is desktop-first but adapts to smaller viewports using Tailwind's responsive prefixes.
+
+### Breakpoints
+
+| Prefix | Width | Behaviour |
+|---|---|---|
+| (none) | < 640px | Single-column layouts, stacked panels, mobile navigation |
+| `sm:` | >= 640px | Two-column grids in dialogs and card lists |
+| `md:` | >= 768px | Full desktop layout: side-by-side editors, persistent nav bar, side bar |
+| `lg:` | >= 1024px | Three-column machine card grid on the home page |
+
+### Desktop (>= 768px)
+
+The navigation bar uses a three-column grid (`md:grid md:grid-cols-[minmax(max-content,1fr)_minmax(0,auto)_minmax(max-content,1fr)]`) so the machine name stays centred while actions fill the edges. The editors, side bar, and simulation panel are all visible simultaneously and resizable.
+
+### Tablet and small desktop (640–767px)
+
+Dialogs switch from stacked to side-by-side layouts (`sm:flex-row`). The help dialog's topic list moves from a horizontal scroll to a vertical sidebar (`sm:w-44 sm:flex-col`). Machine cards form a two-column grid (`sm:grid-cols-2`).
+
+### Phone (< 768px)
+
+Below the `md` breakpoint the editor shows one view at a time, controlled by a bottom tab bar (Diagram, Code, Run, Tests, Machine). The navigation bar collapses to a menu button that opens a full-width overlay list. The computation tree pane stacks vertically instead of side by side. A dismissible notice on first visit says the editor works best on a bigger screen.
+
+### Fluid elements
+
+Panel resizers, the simulation tape, and the diagram canvas all adapt to whatever space is available rather than using fixed pixel widths. The tape scrolls horizontally when the input exceeds the viewport.
+
+---
+
 **Related**: [Features Overview](Features/index.md) | [Frontend Architecture](Technical%20Architecture/frontend-architecture.md) | [Simulation & Playback](Features/simulation.md) | [Test Cases](Features/test-cases.md)
 
 ---
