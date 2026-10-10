@@ -349,6 +349,63 @@ No data is persisted. The endpoint is a pure computation — nothing is written 
 
 ---
 
+## REST Architecture Conventions
+
+The API follows REST resource-oriented design principles consistently across all endpoints.
+
+### Resource-oriented URLs
+
+Every endpoint addresses a resource or a collection of resources, never an action:
+
+| Pattern | Example | Meaning |
+|---|---|---|
+| Collection | `/api/machines` | The set of machines belonging to the caller |
+| Item | `/api/machines/:id` | One machine |
+| Sub-collection | `/api/machines/:id/shares` | The shares belonging to one machine |
+| Sub-item | `/api/machines/:id/shares/:sub` | One share on one machine |
+| Separate collection | `/api/api-keys` | The caller's API keys |
+| Computation | `/api/mark` | A stateless marking run (no resource created) |
+
+### HTTP method semantics
+
+| Method | Used for | Idempotent |
+|---|---|---|
+| `GET` | Reading a resource or collection | Yes |
+| `POST` | Creating a resource, or a computation that cannot map to CRUD (`/api/mark`) | No |
+| `PUT` | Full replacement of a machine's definition | Yes |
+| `PATCH` | Partial update (rename a machine, change a share's role) | Yes |
+| `DELETE` | Removing a resource (machine, share, API key) | Yes |
+
+### Status codes
+
+| Code | When |
+|---|---|
+| `200 OK` | Successful read or computation |
+| `201 Created` | Resource created (machine, API key) |
+| `204 No Content` | Successful delete or revoke — no body |
+| `400 Bad Request` | Validation failure, parse error, or semantic conflict |
+| `401 Unauthorized` | Missing or invalid credentials |
+| `403 Forbidden` | Valid API key but not recognised (marking endpoint) |
+| `404 Not Found` | Resource does not exist or caller does not own it |
+| `500 Internal Server Error` | Unexpected server fault |
+| `503 Service Unavailable` | Auth0 not configured (development bootstrap) |
+
+### Ownership and security
+
+- Every machine route requires a valid Auth0 JWT; the caller's `sub` claim scopes all queries to their own documents.
+- A request for a machine the caller does not own returns `404`, not `403` — ownership failures are indistinguishable from missing resources, so the API leaks no information about other users' data.
+- The marking endpoint authenticates with an `X-API-Key` header instead of a JWT, allowing external callers (grading scripts, CI) without a browser session.
+
+### Validation
+
+Every mutating route passes its request through Zod validation middleware (`validateBody`, `validateParams`, `validateQuery`) before reaching the controller. Malformed input is rejected at the route level with a `400` and a structured `issues` array, rather than surfacing as a database error.
+
+### Consistent error shape
+
+All error responses use the same JSON structure (`{ "error": "CODE", "detail": "..." }`) regardless of which endpoint or middleware produced them. See [Error Format](#error-format) below.
+
+---
+
 ## Error Format
 
 JSON error responses share a consistent shape:
@@ -398,3 +455,4 @@ Malformed machine ids (not 24 hex characters) are rejected with `VALIDATION_ERRO
 Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].
 The list preview, collaboration-room saves, and share roles were documented with the assistance of: Claude Code [Claude Opus 5.5].
 API key management and the marking endpoint were documented with the assistance of: Qoder IDE [auto].
+REST architecture conventions were documented with the assistance of: Qoder-IDE [Qwen3.8-Max].
