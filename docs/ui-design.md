@@ -55,8 +55,44 @@ A phone has no room to show several areas at once, so the editor shows **one vie
 
 ---
 
+## Accessibility
+
+The editor is built to be usable without a mouse and by assistive technology.
+
+### Semantic markup
+
+Every interactive element is a real HTML control — `<button>`, `<input>`, `<select>`, `<dialog>` — not a styled `<div>`. Landmarks use their proper roles: the navigation bar is `<nav aria-label="Main">`, page sections use `<section aria-labelledby>`, and dialogs use the native `<dialog>` element.
+
+### Accessible names
+
+Every control has a name a screen reader can announce. Icon-only buttons (the activity bar, the layout switch, the toolbar actions) carry an `aria-label` and show a tooltip on hover or keyboard focus. Toggle buttons expose their state through `aria-pressed`. Form fields that fail validation are marked `aria-invalid`.
+
+### Keyboard access
+
+- All actions reachable by mouse are reachable by keyboard.
+- Panel resizers are focusable and move with the arrow keys.
+- Dialogs trap focus while open and return it to the triggering element on close.
+- The help dialog's topic list uses roving `tabIndex` with arrow-key navigation.
+- A shared `focusRing` style (`focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600`) is applied to every interactive component, so focus is always visible without affecting mouse users.
+
+### Live regions
+
+- Errors and destructive-action confirmations use `role="alert"` so they are announced immediately.
+- Loading indicators use `role="status"` with `aria-live="polite"` so they are announced when convenient.
+- The status bar's parse-error count and test-result totals update in place without stealing focus.
+
+### Contrast
+
+The colour tokens are chosen so that all text a user needs to read meets WCAG AA contrast in both light and dark mode. The one token below AA (`--fg-faint`) is reserved for disabled controls and decoration, never for readable text.
+
+### Testing
+
+Component and route tests query the DOM by accessible role (`getByRole`, `findByRole`) rather than by CSS selector or test ID. This means a missing or incorrect accessible name fails the test suite.
+
+---
+
 **Related**: [Features Overview](Features/index.md) | [Frontend Architecture](Technical%20Architecture/frontend-architecture.md) | [Simulation & Playback](Features/simulation.md) | [Test Cases](Features/test-cases.md)
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5], Qoder-IDE [Qwen3.8-Max].
