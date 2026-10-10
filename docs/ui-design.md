@@ -192,6 +192,48 @@ The editor remembers per browser: the layout arrangement (side by side, stacked,
 
 ---
 
+## Navigation Structure
+
+The application has three routes and a flat navigation hierarchy — no nested menus for core actions.
+
+### Routes
+
+| Route | Purpose |
+|---|---|
+| `/` (Home) | Machine list: your machines, shared with you, and example machines. Create, rename, delete, and open machines from here. |
+| `/editor/:id` (Editor) | The full editing environment for one machine: diagram, code, simulation, test cases, sharing, export. |
+| `/signin` (Sign In) | Auth0 Universal Login redirect. Only shown when an unauthenticated user attempts a protected action. |
+
+### Editor navigation
+
+Within the editor, every feature is at most one click away:
+
+| Control | Location | Reaches |
+|---|---|---|
+| Navigation bar | Top | Home, New, Save, Revert, Share, Export, machine name, colour mode, sign in/out, help |
+| Layout switch | Top right of editors | Side by side, stacked, diagram only, code only, reset layout |
+| Activity bar | Right edge | Machine settings, Test cases |
+| Simulation panel | Bottom | Run, pause, step, speed, tape, computation tree |
+| Status bar | Very bottom | Parse errors (click to jump), test results (click to open) |
+
+### Mobile navigation
+
+On a phone the navigation bar collapses to a menu button, and a bottom tab bar replaces the spatial layout:
+
+| Tab | Shows |
+|---|---|
+| Diagram | The state diagram |
+| Code | The instruction editor |
+| Run | The simulation panel |
+| Tests | The test-case list |
+| Machine | Machine settings |
+
+### Home page navigation
+
+The home page is a single scrollable list of machine cards grouped into sections (Your machines, Shared with you, Examples). Each card opens the editor directly. There are no sub-pages, wizards, or nested navigation — the entire app is two screens deep at most.
+
+---
+
 **Related**: [Features Overview](Features/index.md) | [Frontend Architecture](Technical%20Architecture/frontend-architecture.md) | [Simulation & Playback](Features/simulation.md) | [Test Cases](Features/test-cases.md)
 
 ---
