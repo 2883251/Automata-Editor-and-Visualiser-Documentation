@@ -160,6 +160,38 @@ Panel resizers, the simulation tape, and the diagram canvas all adapt to whateve
 
 ---
 
+## User Experience Patterns
+
+### Error handling
+
+- **Instruction parse errors** appear inline in the code editor (underlined with a diagnostic message) and as a count in the status bar. Choosing the count jumps to the first error and brings the editor into view if it was hidden.
+- **Network and server errors** surface as `role="alert"` banners at the point of failure (sign-in page, home page, editor save) rather than a generic toast, so the user knows which action failed.
+- **Form validation** marks invalid fields with `aria-invalid` and shows the specific issue beneath the field. The backend uses Zod schemas; the frontend mirrors the same rules so most errors are caught before a request is sent.
+- **Unavailable actions** explain themselves: a disabled button says why in its tooltip and, on the mobile menu, in words under its name.
+
+### Loading and progress
+
+- Every async operation shows a `role="status"` indicator in context: "Loading machines…" on the home page, "Moving to your account…" during a copy, "Loading shared machines…" in the shared tab.
+- The simulation panel shows progress while a test-case check runs, then resolves to totals ("3 passed · 1 failed · 0 inconclusive").
+- Long-running simulations pause themselves at a configurable step budget rather than freezing the tab.
+
+### Destructive actions
+
+Deleting a machine, revoking a share, or revoking an API key opens a `ConfirmDialog` that names the consequence and requires an explicit confirm. The dialog traps focus and returns it to the trigger on cancel.
+
+### Session persistence
+
+The editor remembers per browser: the layout arrangement (side by side, stacked, diagram only, code only), panel sizes, which side bar view is open, whether the simulation panel is collapsed, and the colour-mode choice. Re-opening a closed tab resumes where the user left off without re-login (Auth0 sessions persist independently).
+
+### Discoverability
+
+- The status bar's test-result totals are clickable and open the Test cases view.
+- The activity bar icons show tooltips naming each view.
+- Example machines on the home page let a first-time user open a working machine immediately.
+- The help dialog (question-mark icon) provides in-app documentation for every feature area.
+
+---
+
 **Related**: [Features Overview](Features/index.md) | [Frontend Architecture](Technical%20Architecture/frontend-architecture.md) | [Simulation & Playback](Features/simulation.md) | [Test Cases](Features/test-cases.md)
 
 ---
