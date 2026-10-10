@@ -91,6 +91,44 @@ Component and route tests query the DOM by accessible role (`getByRole`, `findBy
 
 ---
 
+## Visual Design System
+
+The editor uses a consistent, token-driven design system rather than ad-hoc styling.
+
+### Colour tokens
+
+All colours are defined as CSS custom properties in `index.css` and consumed through Tailwind utilities (`bg-surface`, `border-line`, `text-fg-muted`). The tokens are named by role, not by shade:
+
+| Token family | Shades | Used for |
+|---|---|---|
+| `surface` | 5 (base, muted, sunken, strong, stronger) | Backgrounds, cards, raised areas |
+| `line` | 4 (subtle, base, strong, stronger) | Borders, dividers, panel edges |
+| `fg` | 5 (base, secondary, muted, subtle, faint) | Text at decreasing emphasis |
+| `backdrop` | 1 | Dialog and menu overlays |
+| `tooltip` | 1 | Tooltip backgrounds |
+
+Each token resolves to a different value in light and dark mode, so a component written against the tokens needs no `dark:` variant of its own. Accent colours (emerald for accept, rose for reject, amber for warning, sky for actions) come from Tailwind's palette and carry an explicit `dark:` variant where the light shade would be unreadable on a dark background.
+
+### Light and dark mode
+
+The theme is controlled by a `.dark` class on `<html>`, set by `theme.ts`. Users choose Light, Dark, or System; the choice persists across sessions. The diagram canvas exports in light mode regardless of the current theme, so shared images look consistent.
+
+### Typography and icons
+
+- Text uses the system font stack (Roboto on the documentation site, system-ui in the app).
+- Code uses Roboto Mono / the system monospace stack.
+- Icons are VS Code codicons, giving a uniform weight and style across every button and menu item.
+
+### Component consistency
+
+Interactive elements share a single `button-styles.ts` module that exports the focus ring, size variants, and colour treatments. The `IconButton` component wraps every icon-only button with a consistent shape, hover state, disabled state, and accessible name requirement. Dialogs, menus, and panels all draw their borders, backgrounds, and shadows from the same token set.
+
+### Diagram theming
+
+React Flow's built-in variables (`--xy-background-color`, `--xy-edge-label-background-color`, `--xy-controls-button-*`) are overridden from the same CSS custom properties, so the diagram canvas, zoom controls, and edge labels follow the app theme without separate styling.
+
+---
+
 **Related**: [Features Overview](Features/index.md) | [Frontend Architecture](Technical%20Architecture/frontend-architecture.md) | [Simulation & Playback](Features/simulation.md) | [Test Cases](Features/test-cases.md)
 
 ---
