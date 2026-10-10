@@ -30,12 +30,12 @@ Cumulative proof index for all milestone rubric criteria across Sprints 1–4. E
 | Deployment (App + API + Docs) | S4 | [CI/CD Pipeline](Development%20Guide/ci-cd-pipeline.md), [System Overview §Deployment](Technical%20Architecture/system-overview.md#deployment-topology) | Azure App Service (frontend + backend), GitHub Pages (docs), all automated |
 | Performance (App) | S3, S4 | `TODO` | No dedicated performance documentation or benchmarks in the docs site |
 | Performance (API) | S4 | `TODO` | No load-testing or API performance documentation |
-| Accessibility (App) | S4 | `TODO` | `ui-design.md` mentions screen-reader names and keyboard focus but no dedicated accessibility audit |
-| Aesthetics (App) | S4 | `TODO` | `ui-design.md` describes layout but does not evaluate visual styling or design consistency |
-| User Experience (App) | S4 | `TODO` | `ui-design.md` covers interaction design partially; no dedicated UX evaluation |
-| Responsiveness (App) | S4 | `TODO` | `ui-design.md` mentions a mobile notice but no responsive breakpoint documentation |
-| App Structure (navigation) | S4 | `TODO` | `ui-design.md` describes layout but does not evaluate navigation complexity |
-| API Architecture (established patterns) | S4 | `TODO` | Endpoints follow REST conventions but no explicit discussion of architectural pattern adherence |
+| Accessibility (App) | S4 | [UI Design §Accessibility](ui-design.md#accessibility) | Semantic HTML, ARIA attributes, keyboard access, focus management, AA contrast, role-based testing |
+| Aesthetics (App) | S4 | [UI Design §Visual Design System](ui-design.md#visual-design-system) | Token-driven colour system, light/dark mode, consistent components, themed diagram canvas |
+| User Experience (App) | S4 | [UI Design §User Experience Patterns](ui-design.md#user-experience-patterns) | Error handling, loading states, confirm dialogs, session persistence, discoverability |
+| Responsiveness (App) | S4 | [UI Design §Responsiveness](ui-design.md#responsiveness) | Tailwind breakpoints (sm/md/lg), mobile tab bar, fluid panels, desktop-first adaptation |
+| App Structure (navigation) | S4 | [UI Design §Navigation Structure](ui-design.md#navigation-structure) | Three routes, flat hierarchy, one-click access to every feature, mobile tab bar |
+| API Architecture (established patterns) | S4 | [REST Endpoints §Architecture](API%20Documentation/rest-endpoints.md#rest-architecture-conventions) | Resource-oriented URLs, correct HTTP verbs, proper status codes, Zod validation, consistent error shape |
 | Production Data | S4 | `TODO` | No documentation addresses production data vs. testing data |
 
 ---
