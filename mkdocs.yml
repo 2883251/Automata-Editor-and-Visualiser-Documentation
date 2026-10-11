@@ -55,6 +55,7 @@ nav:
       - Export: Features/export.md
       - Sharing: Features/sharing.md
   - UI Design: ui-design.md
+  - Performance: performance.md
   - Technical Architecture:
       - Overview: Technical Architecture/index.md
       - System Overview: Technical Architecture/system-overview.md
@@ -81,6 +82,7 @@ nav:
   - Glossary: glossary.md
   - Proof of Meetings: proof-of-meetings.md
   - User Testing: user-testing-feedback.md
+  - Rubric Proof: rubric-proof.md
 
 extra:
   social:

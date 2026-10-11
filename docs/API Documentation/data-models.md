@@ -236,9 +236,39 @@ MongoDB is schemaless by default, but the application still needs structure:
 
 ---
 
+## Production Data
+
+The deployed backend's MongoDB Atlas cluster holds real machines created by real signed-in users, alongside machines created during testing. This section reports what is actually in the production database so the difference between genuine usage and test artefacts is explicit.
+
+At the time of writing the `machines` collection holds **25 documents** owned by **9 distinct Auth0 subjects**. Machines created **after 28 September 2026** are testing artefacts (created while exercising the deployed API and the sharing flow); everything created on or before that date is genuine production usage. On that split, **18 machines are production data** and **7 are testing data**.
+
+### Machines per owner
+
+![Machines per owner](../assets/images/machines-per-owner.png){ loading=lazy }
+
+Ownership is skewed rather than uniform. Two owners hold seven machines each, two hold three, and the remaining five hold one each. The single-machine accounts are consistent with people who signed in, saved one machine to try the persistence flow, and stopped — which is the expected shape for a project with a small real user base rather than a synthetic fixture, where every owner would hold a similar count.
+
+### Machines created by owner over time
+
+![Machines created by owner vs date of creation](../assets/images/machines-created-by-owner-vs-date.png){ loading=lazy }
+
+Creation activity clusters into weekly buckets. The **14 Sep** (7 machines) and **21 Sep** (8 machines) buckets are the heaviest and correspond to real usage as the persistence and sharing features landed. The **28 Sep** bucket (3 machines) tapers as development settled. The **05 Oct** bucket (7 machines) is the testing batch created after the 28 September cut-off, spread across five owners — three of whom appear only in this window and are test accounts.
+
+### Reading the two charts together
+
+- **Six owners** created machines on or before 28 September and therefore contributed production data.
+- **Three owners** appear only in the post-28-September testing window and are test accounts.
+- **Two owners** appear in both windows: they used the app for real and later exercised it again during testing.
+- The production machines (18) outnumber the testing machines (7), so the collection is dominated by genuine usage rather than fixtures.
+
+This confirms the deployment is live and multi-user: distinct Auth0 subjects, created across several weeks, own differing numbers of machines — a distribution that only real sign-in and save behaviour produces.
+
+---
+
 **Related**: [REST Endpoints](rest-endpoints.md) | [Authentication & Security](authentication.md) | [Backend Architecture](../Technical%20Architecture/backend-architecture.md) | [Core Package Architecture](../Technical%20Architecture/core-package.md)
 
 ---
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
 Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].
+The Production Data section was documented with the assistance of: Qoder-IDE [Qwen3.8-Max].
