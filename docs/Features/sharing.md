@@ -22,7 +22,7 @@ Share a machine with another user by **email**, as a **viewer** or an **editor**
 | **Viewer** | Open and run the machine and check its test cases, but not change it |
 
 - A **viewer** sees a read-only banner naming the owner, with **Make my own copy**. The copy asks for a name and becomes a new machine the viewer owns, test cases included.
-- While a machine has at least one **editor**, it opens in a live collaboration room for its owner and editors. Changes save on their own, and everyone sees each other's edits and cursors. Viewers watch the same room read-only, so they see changes as they happen.
+- While a machine has at least one **editor**, it opens in a live collaboration room for its owner and editors. The machine is read-only until the room has connected. Changes save on their own, and everyone sees each other's edits and cursors. Viewers watch the same room read-only, so they see changes as they happen.
 - A machine with no editors saves only when its owner presses Save. See [Machine Management](machine-management.md#saving-and-reverting).
 
 ## Changing Access While a Machine Is Open

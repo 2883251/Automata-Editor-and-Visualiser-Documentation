@@ -40,14 +40,15 @@ Types `2` and `3` are not used: `y-websocket`'s client reserves them.
 | `4003` | The `Origin` is not allowed | Yes |
 | `4004` | No such machine, or this user has no access to it | Yes |
 | `4403` | This user lost access while connected: the owner removed them or deleted the machine | No |
+| `1011` | The server could not set the connection up, for example because the database could not be reached | Yes |
 
 `y-websocket` does not reconnect after a close code from `4400` to `4499`, which is why `4403` is in that range.
 
 ## The Room
 
 - There is one Yjs document per machine. It holds `source` (a `Y.Text`), `positions` (a `Y.Map` from state id to `{ x, y }`), and the test cases (a `Y.Map` from id to test case, with a `Y.Array` of ids for their order). These are the same fields `PUT /api/machines/:id` saves.
-- While people are connected, the room writes its content back to the machine about 2 seconds after the last change, and at least every 10 seconds during continuous editing. It also writes when the last person leaves, then closes. Each write sends message `4` to everyone in the room.
-- The room's Yjs state is stored with the machine (`collabState`), and a room reopens from it rather than from `source`. That keeps one edit history, so a browser holding a cached copy of the room does not end up with duplicated text.
+- While people are connected, the room writes its content back to the machine about 2 seconds after the last change, and at least every 10 seconds during continuous editing. It also writes when the last person leaves, then closes. A write that fails is tried again, and the room stays open until it has been saved. Each write sends message `4` to everyone in the room.
+- The room's Yjs state is stored with the machine (`collabState`), and a room reopens from it rather than from `source`. It is stored as soon as a machine's first room is created, before anyone has changed anything. That keeps one edit history, so a browser holding a cached copy of the room does not end up with duplicated text.
 - A content save over REST (`PUT /api/machines/:id`) is applied to the open room, or to the stored `collabState`, as ordinary edits. Without this, the next room would bring back the older content.
 
 ## Access Changes While Connected

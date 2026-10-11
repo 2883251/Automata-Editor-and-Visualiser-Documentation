@@ -47,7 +47,7 @@ A machine only you work on saves **when you press Save** (or Ctrl+S, Cmd+S on a 
 - Closing the tab, or opening a different machine from the home page, asks first while there are unsaved changes.
 - Each of these questions is one of the app's own dialogs, with **Cancel** focused first and Escape to cancel. The one exception is closing or reloading the tab, where the browser shows its own warning.
 
-A machine that is **shared for editing** (you own it and have given someone the editor role, or you are an editor on it) is different: it opens in a live collaboration room and saves on its own as you type. The Save slot then shows an icon for the room's state: connecting, saving, all changes saved, or offline. When you give the first person the editor role, your unsaved changes are saved first. See [Sharing](sharing.md).
+A machine that is **shared for editing** (you own it and have given someone the editor role, or you are an editor on it) is different: it opens in a live collaboration room and saves on its own as you type. It is read-only until the room has connected. The Save slot then shows an icon for the room's state: connecting, saving, all changes saved, or offline. When you give the first person the editor role, your unsaved changes are saved first. See [Sharing](sharing.md).
 
 ## Renaming
 
