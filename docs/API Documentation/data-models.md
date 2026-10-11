@@ -1,6 +1,6 @@
 # Data Models
 
-The core domain models for the Automata Editor are defined in `@brh/automata-core` and exported from its barrel entry point `src/index.ts`. Both the frontend and backend consume these types identically. This page reflects **Core 3.0.0** (multi-tape machines); see the [Core Package Architecture](../Technical%20Architecture/core-package.md) for the full module map and 2.x → 3.0 migration notes.
+The core domain models for the Automata Editor are defined in `@brh/automata-core` and exported from its barrel entry point `src/index.ts`. Both the frontend and backend consume these types identically. This page reflects **Core 4.0.0** (multi-tape machines since 3.0.0, nondeterministic machines since 3.1.0, stationary moves since 4.0.0); see the [Core Package Architecture](../Technical%20Architecture/core-package.md) for the full module map, version history and 2.x → 3.0 migration notes.
 
 ---
 
@@ -51,7 +51,7 @@ A single transition in a Turing machine's transition function. Since Core 3.0.0 
 
 Helpers:
 
-- `effectiveDistance(transition, tapeIndex)` — resolves the per-tape `distances` default, returning `1` when omitted.
+- `effectiveDistance(transition, tapeIndex)` — how far that tape's head moves: `0` for a stay, otherwise the per-tape `distances` entry, or `1` when omitted.
 - `transitionKey(reads)` — the composite key (NUL-joined read tuple) used by the inner transition map, keeping multi-tape lookup a single O(1) `Map` access.
 
 Machines written for Core 2.x with scalar `read`/`write`/`direction` fields need each value wrapped in a one-element array.
@@ -74,8 +74,10 @@ A fully constructed, deeply frozen Turing machine. All collections are `Readonly
 | `inputAlphabet` | `ReadonlySet<Symbol>` | Symbols the machine accepts as input (subset of tape alphabet) |
 | `transitions` | `ReadonlyMap<StateId, ReadonlyMap<string, Transition>>` | Nested map for O(1) lookup by state then composite read key |
 | `tapeCount` | `number` | How many tapes the machine operates on (≥ 1; added in 3.0.0) |
+| `nondeterministic` | `boolean` *(optional)* | Whether a state may have more than one transition for the same read (added in 3.1.0). Absent on a deterministic machine |
+| `alternatives` | `ReadonlyMap<StateId, ReadonlyMap<string, readonly [Transition, ...Transition[]]>>` *(optional)* | The extra branches of a nondeterministic machine, in the order they were declared. The first branch for each read stays in `transitions` |
 
-The inner map of `transitions` is keyed by `transitionKey(reads)` — the composite per-tape read string — not by a single symbol.
+The inner map of `transitions` is keyed by `transitionKey(reads)` — the composite per-tape read string — not by a single symbol. The blank symbol is always `_`; it must be in the tape alphabet and must not be in the input alphabet.
 
 ### `MachineDefinition`
 
@@ -83,6 +85,8 @@ Mutable input type used to describe a machine before construction. Uses plain ar
 
 | Field | Type | Description |
 |---|---|---|
+| `tapeCount` | `number` *(optional)* | Number of tapes; defaults to `1` |
+| `nondeterministic` | `boolean` *(optional)* | Allow more than one transition for the same state and read |
 | `states` | `ReadonlyArray<StateId>` | Every state in the machine |
 | `startState` | `StateId` | The state the machine starts in |
 | `acceptingStates` | `ReadonlyArray<StateId>` | States that cause acceptance |
@@ -98,7 +102,7 @@ A transition paired with its source state, used in `MachineDefinition.transition
 | Field | Type | Description |
 |---|---|---|
 | `from` | `StateId` | The state this transition originates from |
-| `transition` | `Transition` | The transition itself (read, write, direction, target) |
+| `transition` | `Transition` | The transition itself (reads, writes, directions, target) |
 
 ---
 
@@ -107,11 +111,12 @@ A transition paired with its source state, used in `MachineDefinition.transition
 | Function | Description |
 |---|---|
 | `createMachine(definition)` | Build a validated, deeply frozen `Machine` from a `MachineDefinition`. Throws `MachineValidationError` on invalid input. Validates the tape count and every transition's per-tape arity. |
-| `lookupTransition(machine, state, reads)` | Constant-time transition lookup by state and per-tape read tuple. Returns `TransitionResult`. |
+| `lookupTransition(machine, state, reads)` | Constant-time transition lookup by state and per-tape read tuple. Returns `TransitionResult`: `no-transition`, or `found` with every branch for that read (one, unless the machine is nondeterministic). |
 | `machinesEqual(a, b)` | Deep structural equality comparison for machines. |
 | `addState`, `removeState` | Immutable update helpers — each returns a new frozen `Machine` |
 | `addTransition`, `removeTransition` | Immutable transition update helpers |
 | `setStartState` | Immutable start state update |
+| `setNondeterministic` | Mark a machine nondeterministic or deterministic. Going back to deterministic is refused while any read still has more than one branch |
 | `addAcceptingState`, `removeAcceptingState` | Immutable accepting state update helpers |
 | `addRejectingState`, `removeRejectingState` | Immutable rejecting state update helpers |
 
@@ -124,14 +129,16 @@ Key runtime types (all exported from the package root):
 | Type | Description |
 |---|---|
 | `Configuration` | The machine's complete situation at a point in time: current state, `tapes` (one sparse tape per tape), `heads` (one position per tape), and `steps`. `initConfiguration()` writes the input to tape 0 and starts every head at 0. |
-| `StepResult` | Discriminated union (`accepted \| rejected \| stepped`) for driving the simulator one `step()` at a time. |
+| `StepResult` | Discriminated union (`accepted \| rejected \| stepped`) for driving the simulator one `step()` at a time. A machine with no transition to apply reports `rejected`; a consumer tells *stuck* apart by checking whether the state is a rejecting state. |
 | `SimulateResult` | Outcome of `simulate()` with its `HaltReason` (`accepted \| rejected \| exceeded-limit`). |
 | `DerivedOutput` | Output read back from a halted configuration's first tape by `deriveOutput()`: the trimmed string and the position it starts at. |
+| `ComputationNode` | One configuration in a nondeterministic machine's computation tree: its `id`, `parent`, the `transition` that led to it, its `configuration`, and a `BranchStatus` (`accepted \| rejected \| stuck \| open`). |
+| `NondeterministicResult` | Outcome of `simulateNondeterministic()` or a finished `exploreComputation()`: a reason (`accepted \| rejected \| inconclusive`), every node explored, and the accepting node if there is one. |
 | `TestCase` | Input string plus an `Expectation` (`accepts`, `rejects`, or a `final-tape` value). Structural — carries no id. |
 | `TestCaseResult` | One case's outcome, pass/fail verdict, halting configuration, and `TestCaseMeasurement`. |
 | `MeasuredCost` | `steps`, `cells` (distinct head positions across all tapes), and `inputLength`. |
 | `ExcludedCost` | A run that hit its step budget: no step/cell count, only `inputLength`, `reason`, and `limit`. |
-| `TapeComparison` | First differing cell (string index + tape position) for a failed `final-tape` expectation. |
+| `TapeComparison` | The expected and actual tape for a `final-tape` expectation, and the first differing cell (string index + tape position), or `null` for both when they match. |
 
 ---
 
@@ -159,7 +166,7 @@ See [REST Endpoints](rest-endpoints.md) for the full request and response shapes
 
 ## Database Schema (MongoDB)
 
-The backend persists machines and user records in **MongoDB** via Mongoose. The full collection schemas live in `src/models/machine.ts` and `src/models/user.ts` in the Backend repository.
+The backend persists machines, user records and API keys in **MongoDB** via Mongoose. There are three collections. The full schemas live in `src/models/machine.ts`, `src/models/user.ts` and `src/models/api-key.ts` in the Backend repository. Documents refer to people by their Auth0 `sub`, not by a database id.
 
 ### `machines` collection
 
@@ -168,12 +175,16 @@ The backend persists machines and user records in **MongoDB** via Mongoose. The 
 | `owner` | string (Auth0 `sub`) | required, indexed |
 | `name` | string | default `'Untitled machine'`, trimmed, max 200 chars |
 | `source` | string | required — the instruction-language source text |
-| `positions` | `Map<string, {x, y}>` | diagram layout positions for each state |
+| `positions` | `Map<string, {x, y}>` | diagram layout positions for each state; default `{}` |
 | `testCases` | `{ id, input, expectation }[]` | default `[]`; `expectation.kind` is `accepts`, `rejects`, or `final-tape` (with a `tape`); `input` may be empty. Machines saved before sprint 3 have none |
-| `sharedWith` | string[] | Auth0 `sub`s of share recipients |
+| `sharedWith` | string[] | Auth0 `sub`s of everyone the machine is shared with, viewers and editors alike |
+| `editors` | string[] | The `sub`s among `sharedWith` who may also change the machine. Always a subset of `sharedWith` |
+| `collabState` | Buffer (optional) | The collaboration room's Yjs state, stored so a room reopens with one edit history. See [WebSocket Events](websocket-events.md#the-room) |
 | `createdAt` / `updatedAt` | dates | Mongoose-managed timestamps |
 
 Compound indexes: `{ owner: 1, updatedAt: -1 }` (owner's machines sorted newest-first) and `{ sharedWith: 1, updatedAt: -1 }` (shared-with-me queries).
+
+A person's role on a machine is not stored. It is worked out from these fields: the `owner`, else an editor if they are in `editors`, else a viewer if they are in `sharedWith`.
 
 ### `users` collection
 
@@ -185,6 +196,17 @@ Compound indexes: `{ owner: 1, updatedAt: -1 }` (owner's machines sorted newest-
 | `createdAt` / `updatedAt` | dates | Mongoose-managed timestamps |
 
 The users collection holds **no credentials** — Auth0 owns identity. It only resolves a `sub` to the email and name the token last carried, so an owner can share a machine by email. A recipient must have used the app at least once before a machine can be shared with them.
+
+### `apikeys` collection
+
+| Field | Type | Notes |
+|---|---|---|
+| `owner` | string (Auth0 `sub`) | required, indexed — the user who created the key |
+| `keyHash` | string | required, unique — the SHA-256 hash of the key. The key itself is never stored |
+| `label` | string | required, trimmed, max 200 chars — the name the user gave the key |
+| `createdAt` / `updatedAt` | dates | Mongoose-managed timestamps |
+
+Compound index: `{ owner: 1, createdAt: -1 }` (a user's keys, newest first). Revoking a key deletes its document. See [API Key Authentication](authentication.md#api-key-authentication).
 
 ### Schema validation
 
@@ -272,3 +294,4 @@ This confirms the deployment is live and multi-user: distinct Auth0 subjects, cr
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
 Test-case persistence (M3b) was documented with the assistance of: Claude Code [Claude Opus 5].
 The Production Data section was documented with the assistance of: Qoder-IDE [Qwen3.8-Max].
+The Core 4.0.0 types, the `editors` and `collabState` fields, and the `apikeys` collection were documented with the assistance of: Claude Code [Claude Opus 5.5].

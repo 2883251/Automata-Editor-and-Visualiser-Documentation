@@ -1,6 +1,6 @@
 # CI/CD Pipeline
 
-Continuous integration and deployment pipelines are built with Gitea Actions (for application repos) and GitHub Actions (for documentation).
+Continuous integration and deployment pipelines are built with Gitea Actions (all four repos) and GitHub Actions (to publish the documentation site).
 
 ---
 
@@ -11,6 +11,10 @@ All three TypeScript repositories run the same CI gate on every pull request. Wo
 ### Trigger
 
 - Pull requests (push trigger is commented out — CI runs on PRs only)
+
+### Runners
+
+Jobs run on the team's own self-hosted Gitea runners. The Frontend, Backend and Documentation workflows ask for them by the label `brh-local`; the Core workflows use `ubuntu-latest`, which the same runners also answer to.
 
 ### Steps (in order)
 
@@ -25,7 +29,7 @@ All three TypeScript repositories run the same CI gate on every pull request. Wo
 | Run tests | `npm test -- --run` |
 | Build | `npm run build` |
 
-The Frontend CI adds two extra steps after unit tests:
+The Frontend CI adds two extra steps after unit tests, before the build:
 
 - `npx playwright install --with-deps` — download browser binaries
 - `npm run test:e2e` — run Playwright E2E tests
@@ -48,8 +52,10 @@ Backend and Frontend CI require a `NPM_TOKEN` repository secret with `read:packa
 | Concurrency | `deploy-backend` group, no cancel-in-progress |
 | Steps | CI gate (lint → typecheck → test → build) then `azure/webapps-deploy@v3` |
 | App name | `Automata-EV-server` |
-| Deployed artifact | `dist/` (compiled TypeScript) |
-| Secret required | `AZURE_WEBAPP_PUBLISH_PROFILE` |
+| Deployed artifact | A `deploy/` folder: `dist/` (compiled TypeScript), `package.json`, the lockfile, and the production dependencies installed into it |
+| Secrets required | `AZURE_WEBAPP_PUBLISH_PROFILE`, `NPM_TOKEN` |
+| Runtime settings | `MONGODB_URI`, `CORS_ORIGIN` and the Auth0 values are set on the App Service, not in the workflow |
+| Address | `https://automata-ev-server-dwengvgxevg3hpbz.southafricanorth-01.azurewebsites.net` |
 
 ### Frontend → Azure App Service
 
@@ -59,10 +65,35 @@ Backend and Frontend CI require a `NPM_TOKEN` repository secret with `read:packa
 |---|---|
 | Trigger | Push to `main` |
 | Concurrency | `deploy-frontend` group, no cancel-in-progress |
-| Steps | CI gate (lint → typecheck → test → build) then `azure/webapps-deploy@v3` |
+| Steps | Lint → typecheck → test → build, then `azure/webapps-deploy@v3`. The end-to-end tests run on the pull request, not again here |
 | App name | `Automata-EV` |
-| Deployed artifact | `dist/` (Vite production build) |
-| Secret required | `AZURE_WEBAPP_PUBLISH_PROFILE` |
+| Deployed artifact | A `deploy/` folder: `dist/` (Vite production build) and a small Express server (`azure/server.js`) that serves it, sending `index.html` for any address the app routes itself |
+| Secrets required | `AZURE_WEBAPP_PUBLISH_PROFILE`, `NPM_TOKEN` |
+| Build settings | `VITE_API_URL` and the `VITE_AUTH0_*` values come from repository variables, since Vite builds them into the app |
+| Address | `https://automata-ev-gghea7fxbsh9b5hx.southafricanorth-01.azurewebsites.net` |
+
+### Load Test (Backend)
+
+**File**: `.gitea/workflows/load-test.yml`
+
+| Property | Value |
+|---|---|
+| Trigger | Run by hand (`workflow_dispatch`), choosing all scenarios or one |
+| Steps | Check the secrets are set → run the Artillery test in `load-tests/` against the deployed API → upload `report.json` as an artifact |
+| Secrets required | `LOAD_TEST_BASE_URL`, `LOAD_TEST_API_KEY`, `LOAD_TEST_JWT_TOKEN` |
+
+See [Testing Strategy](testing-strategy.md#load-tests-backend).
+
+### Documentation CI
+
+**File**: `.gitea/workflows/ci.yml` (Documentation repository)
+
+| Property | Value |
+|---|---|
+| Trigger | Every push and every pull request |
+| Steps | Checkout → setup Python 3.12 → `pip install -r requirements.txt` → `mkdocs build --strict` |
+
+The strict build treats warnings as errors, so a broken internal link fails the check before it can reach the site.
 
 ### Documentation → GitHub Pages
 
@@ -71,7 +102,7 @@ Backend and Frontend CI require a `NPM_TOKEN` repository secret with `read:packa
 | Property | Value |
 |---|---|
 | Trigger | Push to `main` on the GitHub mirror (via Gitea push mirror) |
-| Steps | Checkout → setup Python 3.12 → `pip install -r requirements.txt` → `mkdocs build --strict` → upload Pages artifact → deploy to `gh-pages` |
+| Steps | Checkout → setup Python 3.12 → `pip install -r requirements.txt` → `mkdocs build --strict` → upload Pages artifact → deploy to GitHub Pages |
 | Permissions | `contents: read`, `pages: write`, `id-token: write` |
 | Concurrency | `pages` group, no cancel-in-progress |
 
@@ -99,9 +130,9 @@ The tag check runs before `npm install` so a mistyped tag fails in seconds rathe
 | Repo | CI | Deploy |
 |---|---|---|
 | Core | PR → lint, typecheck, test, build | Tag push → verify + `npm publish` |
-| Backend | PR → lint, typecheck, test, build | Push `main` → Azure App Service |
+| Backend | PR → lint, typecheck, test, build | Push `main` → Azure App Service. Load test by hand |
 | Frontend | PR → lint, typecheck, test, e2e, build | Push `main` → Azure App Service |
-| Documentation | — | Push `main` → GitHub Pages (via push mirror) |
+| Documentation | Push and PR → `mkdocs build --strict` | Push `main` → GitHub Pages (via push mirror) |
 
 ---
 
@@ -109,4 +140,4 @@ The tag check runs before `npm install` so a mistyped tag fails in seconds rathe
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

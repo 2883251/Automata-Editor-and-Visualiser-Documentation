@@ -29,7 +29,8 @@ The project uses a modern, non-monolithic stack:
 - **Frontend**: React + Vite
 - **Backend**: Node.js + Express
 - **Database**: MongoDB
-- **Deployment**: Azure (frontend & backend), Cloudflare Pages (docs)
+- **Shared core**: `@brh/automata-core`, published to the Gitea npm registry
+- **Deployment**: Azure App Service (frontend & backend), GitHub Pages (docs)
 
 ---
 
@@ -39,4 +40,4 @@ The project uses a modern, non-monolithic stack:
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

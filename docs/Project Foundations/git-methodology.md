@@ -2,17 +2,18 @@
 
 ## 1. Purpose
 
-This document defines how the team uses version control: how branches are created and merged, how commits and branches are named, how changes are reviewed, and how releases are deployed. It applies to all three repositories (`package`, `frontend`, `backend`).
+This document defines how the team uses version control: how branches are created and merged, how commits and branches are named, how changes are reviewed, and how releases are deployed. It applies to all four repositories.
 
 ## 2. Repositories
 
 | Repository | Contents |
 | --- | --- |
-| `package` | Shared TypeScript (or later a WASM compilable language) core: machine model, parser, simulator |
-| `frontend` | Client application |
-| `backend` | API server |
+| `Automata-Editor-and-Visualiser-Core` | Shared TypeScript (or later a WASM compilable language) core: machine model, parser, simulator. Referred to below as the core package |
+| `Automata-Editor-and-Visualiser-Frontend` | Client application |
+| `Automata-Editor-and-Visualiser-Backend` | API server |
+| `Automata-Editor-and-Visualiser-Documentation` | This documentation site |
 
-The three are kept separate so that the core package can evolve independently of the applications that consume it, and so that the front-end and back-end are deployed as separate applications.
+They are kept separate so that the core package can evolve independently of the applications that consume it, and so that the front-end and back-end are deployed as separate applications.
 
 ## 3. Branching Model
 
@@ -157,9 +158,18 @@ elsewhere — see *Versioning the core package*.
 2. Open a PR from the release branch into `main`
 3. Obtain one approval
 4. Merge with a merge commit
-5. Tag `main` with the release version
-6. Confirm the deployed applications are up and healthy
-7. Cut the next release branch from `main`
+5. Confirm the deployed applications are up and healthy
+6. Cut the next release branch from `main`
+
+### Tagging the applications
+
+The applications are not tagged at a release. The merge commit on `main` is the record of a release:
+it is what deployed, and it names the release branch it came from.
+
+The first two releases were tagged: Frontend and Backend each carry `v1.0.0` (sprint 1) and `v1.1.0`
+(sprint 2) on `main`, with a Gitea release named for the sprint. From sprint 3 the team stopped,
+because the merge into `main` already identifies and deploys a release. The core package is
+different, and is always tagged: there the tag is what publishes it.
 
 ### Versioning the core package
 
@@ -180,7 +190,7 @@ included in the release:
 Tags are `v<major>.<minor>.<patch>` — for example `v1.3.0` — and are pushed to the core
 repository, not to the applications. Pushing the tag is what publishes the package.
 
-**The core tag goes on the release branch, not on `main`.** The application procedure above tags
+**The core tag goes on the release branch, not on `main`.** An application release happens on
 `main` because merging into `main` is what deploys, but the core package is published rather than
 deployed, and it releases independently of the sprint cadence. Requiring a merge into `main` would
 couple every library version to an application deployment, which is the coupling this section
@@ -219,11 +229,11 @@ Where possible the rules above are enforced mechanically:
 
 - Branch protection blocks unreviewed and failing changes at the server
 - CI runs lint, type check, and tests on every pull request
-- Commit message format is checked automatically
+- Commit message format is not checked by a tool (see §9). It relies on review and on the PR title rule in §5
 
 ## 9. Open Points
 
-- Commit message linting tool TBD and configured
+- Commit message linting tool: none configured
 - Potential TM-core language TBD (C or C++ good options).
 
 Settled since the first draft:
@@ -235,4 +245,4 @@ Settled since the first draft:
 
 <br>
 
-**AI Declaration:** The preceding document was reviewed and edited with the assisstance of: Claude Web [Claude Opus 5]. The versioning and distribution sections in §7, and the corresponding updates to §9, were written with the assistance of: Claude Code [Claude Opus 5].
+**AI Declaration:** The preceding document was reviewed and edited with the assisstance of: Claude Web [Claude Opus 5]. The versioning and distribution sections in §7, and the corresponding updates to §9, were written with the assistance of: Claude Code [Claude Opus 5]. The repository list, the commit-message enforcement wording and the application tagging note were brought up to date with the assistance of: Claude Code [Claude Opus 5.5].

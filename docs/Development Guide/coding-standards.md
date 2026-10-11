@@ -23,7 +23,7 @@ All three repos use the same ESLint flat config pattern (`eslint.config.js`):
 - **`@eslint/js`** — recommended JavaScript rules
 - **`typescript-eslint`** — TypeScript-specific rules via `tseslint.configs.recommended`
 - **ECMAScript version**: 2023
-- **Globals**: `globals.node` (Core, Backend), browser globals added by Vite (Frontend)
+- **Globals**: `globals.node` (Core, Backend), `globals.browser` (Frontend)
 - **Ignores**: `dist`, `coverage`
 
 Frontend adds:
@@ -107,4 +107,4 @@ PR titles must follow Conventional Commits format — the title becomes the squa
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

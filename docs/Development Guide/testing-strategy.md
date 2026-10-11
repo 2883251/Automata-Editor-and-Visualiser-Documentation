@@ -1,6 +1,6 @@
 # Testing Strategy
 
-Testing frameworks and configuration for each repository.
+Testing frameworks, the suites that exist, and how to run them, for each repository.
 
 ---
 
@@ -9,16 +9,27 @@ Testing frameworks and configuration for each repository.
 | Repo | Unit/Component | Integration | E2E |
 |---|---|---|---|
 | **Core** | Vitest | — | — |
-| **Backend** | Vitest | Supertest | — |
+| **Backend** | Vitest | Supertest (HTTP), real `ws` clients (WebSocket) | — |
 | **Frontend** | Vitest + React Testing Library | — | Playwright |
+
+The Backend also has an Artillery **load test**; see [Load Tests](#load-tests-backend).
 
 ---
 
-## Shipped Test Suites (Sprint 2)
+## The Test Suites
 
-- **Core**: unit tests beside the source for the machine model, parser, simulator, serialisation, and test-case modules. A public-API surface test (`index.test.ts`) fails whenever an export is added to or removed from the barrel without updating the expected list.
-- **Frontend**: unit tests for the machine store, the home page and editor routes, and the simulation controller (`use-simulation`), plus component tests with React Testing Library. Playwright e2e specs cover the simulator (live playback, budget pause, cancel-on-edit), export, test cases, and diagram edge labels.
-- **Backend**: controller, model, and schema tests run against Vitest mocks — no MongoDB instance is required (`mongodb-memory-server` was removed for AVX-less CI compatibility).
+As of the end of sprint 4 (counted on 11 October 2026):
+
+| Repo | Test files | Tests | What they cover |
+|---|---|---|---|
+| **Core** | 23 | 501 | The machine model, parser, diagnostics, serialisation, simulator, computation tree, and test-case modules |
+| **Backend** | 17 | 255 | Controllers, models, request schemas, middleware, and the collaboration server and rooms |
+| **Frontend** (unit and component) | 77 | 893 | Stores, routes, hooks, and components |
+| **Frontend** (end to end) | 18 specs | 110 | The app in a real browser |
+
+- **Core**: unit tests beside the source. A public-API surface test (`index.test.ts`) fails whenever an export is added to or removed from the barrel without updating the expected list, and checks that the `VERSION` export matches `package.json`.
+- **Frontend**: unit tests for the machine store, the routes, the simulation and computation-tree controllers, collaboration, and the layout, plus component tests with React Testing Library. Playwright specs cover the app shell and phone layout, the home page, saving and naming, the simulator, test cases, export, the diagram, code suggestions, colour mode, and each kind of machine: multi-tape, multi-step, stationary moves, computational, and nondeterministic with its computation tree.
+- **Backend**: controller, model, and schema tests run against Vitest mocks — no MongoDB instance is required (`mongodb-memory-server` was removed for AVX-less CI compatibility). The collaboration tests start a real HTTP server on a free local port and connect real WebSocket clients to it, with the database and the token check replaced by fakes.
 
 ---
 
@@ -58,6 +69,8 @@ test: {
 }
 ```
 
+The three configs also set up coverage (see [Measuring Coverage](#measuring-coverage)), and the Frontend sets `testTimeout: 15_000`.
+
 - Frontend uses `jsdom` environment and enables Vitest globals
 - `src/test/setup.ts` gives jsdom a `matchMedia` in which width queries match, so components render their **desktop** layout, the one most tests are about. A test of the phone layout replaces `window.matchMedia` with one that matches nothing, and puts the original back afterwards (see `EditorRoute.layout.test.tsx`)
 - jsdom lays nothing out, so the setup file also supplies a no-op `ResizeObserver` and `Element.scrollTo`
@@ -67,6 +80,7 @@ test: {
 
 - Tests live beside the code they cover as `*.test.ts` (or `*.test.tsx` for React components)
 - Test files are excluded from production builds (`dist/`)
+- **No test depends on timing.** The CI runners are many times slower than a laptop, and their speed varies, so a test that waits a fixed time or expects something within a number of milliseconds fails at random. Tests wait for a condition, or use Vitest's fake timers
 
 ### Running Tests
 
@@ -94,7 +108,7 @@ npm run test:coverage # run once and report coverage
 - **Spec location**: `e2e/` directory
 - **Browser**: Chromium (install with `npx playwright install chromium`)
 
-Playwright builds the app and serves it automatically — no dev server needs to be running.
+Playwright builds the app and serves it automatically (`npm run build && npm run preview`, on port 4173) — no dev server needs to be running. In CI the build under test has no backend and no sign-in configured, so the specs exercise the signed-out app: everything except sharing, collaboration and API keys, which are covered by unit and component tests on both sides.
 
 ```bash
 npm run test:e2e
@@ -118,9 +132,15 @@ This pattern means tests run without MongoDB or network dependencies.
 
 ---
 
+## Load Tests (Backend)
+
+The Backend repository has an [Artillery](https://www.artillery.io/) load test in `load-tests/`. It is run on demand against the deployed API by the **Load Test** workflow (see [CI/CD Pipeline](ci-cd-pipeline.md#load-test-backend)) and is not part of the pull-request gate. `load-tests/README.md` in the Backend repository has the setup, and the results of a run are on the [Performance](../performance.md#api-performance) page.
+
+---
+
 ## CI Integration
 
-All tests run as part of the Gitea Actions CI pipeline on every pull request. See [CI/CD Pipeline](ci-cd-pipeline.md).
+The unit, component and end-to-end tests run as part of the Gitea Actions CI pipeline on every pull request. See [CI/CD Pipeline](ci-cd-pipeline.md).
 
 ---
 
@@ -128,13 +148,14 @@ All tests run as part of the Gitea Actions CI pipeline on every pull request. Se
 
 - **Sprint 1** (delivered): Basic unit tests for core logic
 - **Sprint 2** (delivered): UI *and* API testing — frontend unit suites and Playwright e2e specs, backend controller/model/schema tests
-- **Sprint 3**: Both UI and API testing — useful, extensive test suites
+- **Sprint 3** (delivered): Both UI and API testing — the suites grew with the collaboration, nondeterminism, API key and marking work
+- **Sprint 4** (delivered): tests for stationary moves, the in-app dialogs and help, and the backend load test
 
 ### Measuring Coverage
 
 `npm run test:coverage` works the same in Core, Frontend and Backend. It runs the Vitest suite with `@vitest/coverage-v8`, prints a summary per file, and writes an HTML report to `coverage/index.html` that highlights the lines no test ran. `coverage/` is git-ignored. Only each package's own code is counted: tests, test setup and type declarations are left out, and so are the Frontend's `main.tsx` and the Backend's `index.ts`, which only start the app. The Playwright e2e specs are not measured.
 
-Coverage on `dev/sprint-3` on 2026-09-26:
+No coverage threshold is enforced; the numbers are a guide. The last recorded measurement, on `dev/sprint-3` on 2026-09-26, before the sprint 4 work:
 
 | Package | Statements | Branches | Functions | Lines |
 |---|---|---|---|---|

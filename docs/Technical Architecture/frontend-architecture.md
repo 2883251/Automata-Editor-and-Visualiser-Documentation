@@ -24,9 +24,12 @@ Defined in `src/App.tsx` using React Router's `<Routes>`:
 | `/` | `HomeRoute` | Home page: your machines, machines saved in this browser, machines shared with you, and example machines, as cards with diagram thumbnails |
 | `/editor` | `EditorRoute` | Editor for a machine that has not been saved yet (a scratch page) |
 | `/m/:machineId` | `EditorRoute` | Editor for a saved machine. A stable address, so a reload or a shared link opens the same machine |
-| `/sign-in` | `SignInRoute` | Auth0 sign-in page |
+| `/sign-in` | `SignInRoute` | Sign-in page, which hands over to Auth0 |
+| `/privacy` | `PrivacyRoute` | Privacy policy: what is stored, where, and how to remove it |
 
 Old addresses still work: `/home` and `/machines` redirect to `/`, and `/?machineId=` or `/?example=` redirect to `/editor` with the same query.
+
+No route needs a sign-in to open. Signed out, the app works against machines saved in the browser, and the things that need an account (sharing, API keys, collaboration) say so. Help and API keys are dialogs opened from the navigation bar, not routes.
 
 ---
 
@@ -51,15 +54,16 @@ Key implementation details:
 - Hidden areas stay mounted (the `hidden` attribute), so switching views never loses state such as a half-written test case or the Monaco undo history.
 - Status bar and "open in the simulator" actions reveal their target first (`flushSync`), then focus it: the first error in the instruction editor (`InstructionEditorHandle.showFirstError`), or the simulator's input (`SimulationPaneHandle.loadTestCase`).
 - Below 768px (`useMediaQuery`), `EditorShell` shows one view at a time with a tab bar instead, and `DesktopNotice` says once that the editor works best on a bigger screen.
-- A `NavBar` sits above with the Home link, document actions, the machine's name, colour mode, and auth controls.
+- A `NavBar` sits above with the Home link, document actions, the machine's name, help, colour mode, and auth controls.
 
 ### Layout Components (`src/components/layout/`)
 
 | Component | Purpose |
 |---|---|
-| `NavBar` | Top navigation bar in three columns: title, Home link and document actions (New, Save or its status, Revert, Share, Export) on the left; the machine's name in the middle; presence, colour mode and auth controls on the right. On a phone, a Menu button opens the same actions as a labelled list over the page |
+| `NavBar` | Top navigation bar in three columns: title, Home link and document actions (New, Save or its status, Revert, Share, Export) on the left; the machine's name in the middle; presence, Help, colour mode and auth controls (with the API Keys button when signed in) on the right. On a phone, a Menu button opens the same actions as a labelled list over the page |
+| `ThemeMenu` | The colour mode menu: Light, Dark or System |
 | `MachineName` | The open machine's name. The owner clicks it to rename the machine in place |
-| `UnavailableButton` | Placeholder button for features not yet implemented |
+| `UnavailableButton` | A disabled button that says why it is unavailable |
 
 ### Machine Components (`src/components/machine/`)
 
@@ -84,12 +88,16 @@ Key implementation details:
 | Directory | Library | Purpose |
 |---|---|---|
 | `diagram/` | React Flow (`@xyflow/react@^12.11.3`) | Interactive state diagram — drag nodes, draw edges, custom node rendering; `diagram-export.ts` renders the diagram to PNG/SVG for export (H1); `MachineSettings` gathers the tape count, nondeterminism and alphabet controls for the side bar |
-| `code-editor/` | Monaco Editor (`@monaco-editor/react@^4.7.0`) | Instruction language editing with syntax highlighting and error markers |
-| `tape/` | — | TM simulation: `SimulationPane` (laid out for the wide panel along the bottom), `TapeView` (tape rendering that stays centred on the head, also when its panel is resized), and the `useSimulation` hook driving Core's `step()` on a timer loop (G2-G5) |
+| `code-editor/` | Monaco Editor (`@monaco-editor/react@^4.7.0`, `monaco-editor@^0.56.0`) | Instruction language editing with syntax highlighting, error markers, suggestions for states, symbols and directions inside a rule, and a quick fix that fills in missing transitions. Monaco is bundled with the app, not loaded from a CDN |
+| `tape/` | — | TM simulation: `SimulationPane` (laid out for the wide panel along the bottom), `TapeView` (tape rendering that stays centred on the head, also when its panel is resized), and the `useSimulation` hook driving Core's `step()` on a timer loop, with a history for Step Back (G2-G5, J1) |
+| `tree/` | React Flow | The computation tree of a nondeterministic machine: `ComputationTreePane`, `ComputationTreeView`, and the `useComputationTree` hook driving Core's `exploreComputation()` one tree level per tick (O2, O3) |
 | `export/` | `html-to-image` | Export dialog (H1-H2): diagram as PNG/SVG image, instruction table as CSV/HTML download or clipboard copy |
 | `test-cases/` | — | Test-case authoring and suite runs (I1-I3): `TestCasePanel`, `useSuiteRun`, and complexity plots (K2): `ComplexityChart`, `ComplexityDialog`, `complexity-model` |
 | `layout/` | — | The editor's layout: `EditorShell`, `ActivityBar`, `LayoutSwitch`, `Splitter`, `StatusBar`, `DesktopNotice`, and the saved layout (`editor-layout`, `useEditorLayout`) |
-| `examples/` | — | The three built-in example machines shown on the home page, with fixed layouts |
+| `examples/` | — | The seven built-in example machines shown on the home page, with fixed layouts |
+| `sharing/` | — | `ShareDialog` and the calls behind it: share by email, change a role, revoke |
+| `api-keys/` | — | `ApiKeyDialog`: create, copy and revoke API keys for the marking endpoint |
+| `help/` | — | `HelpDialog`: the in-app help, in seven topics, with worked examples and a ready-made marking request |
 | `collab/` | Yjs, `y-websocket`, `y-indexeddb` | `useCollabDocument` backs the editor with a live collaboration room while a machine is shared for editing, and read-only for a viewer. Presence and the access-change handling live here too. See [WebSocket Events](../API%20Documentation/websocket-events.md) |
 
 ---
@@ -98,10 +106,27 @@ Key implementation details:
 
 | Directory | Purpose |
 |---|---|
-| `lib/` | `machine-store` (browser and account stores behind one interface), `editor-draft` (the unsaved draft), `new-machine`, `format-date` (South African dates, year first), `api-client`, `alphabet` helpers, `auth-config`, `useMediaQuery` hook |
-| `hooks/` | Shared React hooks (`useAuthUser`) |
+| `lib/` | `machine-store` (browser and account stores behind one interface), `editor-draft` (the unsaved draft), `new-machine`, `format-date` (South African dates, year first), `api-client`, `theme` (colour mode), `alphabet` helpers, `auth-config`, `useMediaQuery` hook |
+| `hooks/` | Shared React hooks (`useAuthUser`, `useApiClient`, `useMachineStore`) |
 | `types/` | Shared TypeScript type declarations |
 | `test/` | Test setup and helpers (Vitest + RTL) |
+
+---
+
+## State
+
+There is no state library and no app-defined React context. State is `useState` and custom hooks, most of it in `EditorRoute`. The diagram and the instruction editor share one `EditorDocument` (`source`, the parsed `machine`, `positions`, `diagnostics`, and whether it is `stale`), so a change in either view is a change to the same object. Colour mode is a small module-level store read with `useSyncExternalStore`.
+
+What is kept in the browser:
+
+| Key | Where | Holds |
+|---|---|---|
+| `automata-editor:document` | `localStorage` | The unsaved draft |
+| `automata-editor:machines` | `localStorage` | Machines saved while signed out |
+| `automata-editor:editor-layout:v1` | `localStorage` | The editor layout |
+| `automata-editor:theme` | `localStorage` | Colour mode, when it is not System |
+| `automata-editor:desktop-notice-dismissed` | `localStorage` | That the phone notice was dismissed |
+| `automata-editor:collab:v2:<machineId>` | IndexedDB | A collaboration room's content |
 
 ---
 
@@ -143,13 +168,15 @@ import NavBar from '@/components/layout/NavBar'
 | `react-router` | ^8.3.0 | Client-side routing |
 | `@xyflow/react` | ^12.11.3 | State diagram editor |
 | `@monaco-editor/react` | ^4.7.0 | Code editor |
+| `monaco-editor` | ^0.56.0 | The editor itself, bundled with the app |
 | `tailwindcss` | ^4.3.3 | Utility-first CSS |
 | `@auth0/auth0-react` | ^2.24.1 | Authentication |
-| `@brh/automata-core` | ^3.1.0 | Shared machine model, parser, simulator, test cases |
+| `@brh/automata-core` | ^4.0.0 | Shared machine model, parser, simulator, computation tree, test cases |
 | `html-to-image` | ^1.11.13 | Diagram PNG/SVG rendering for export |
 | `@vscode/codicons` | ^0.0.46-24 | Interface icons (CC-BY-4.0) |
 | `yjs` | ^13.6.32 | Shared document for collaborative editing |
 | `y-websocket` | ^3.1.0 | Collaboration room connection |
+| `y-protocols` | ^1.0.7 | Presence (awareness) in a room |
 | `y-indexeddb` | ^9.0.12 | Caches a room's content in the browser |
 
 ---

@@ -21,9 +21,9 @@ The home page is at `/`. The **Home** link in the navigation bar returns to it f
 | **Your machines** | A **New machine** card, then your machines, most recently saved first. Each card you own can be renamed, shared, or deleted. |
 | **Saved in this browser** | Only when you are signed in and machines saved before signing in are still in this browser. Each can be moved to your account, or all at once. A move saves the machine to your account before removing it from the browser, so a failed move loses nothing. |
 | **Shared with you** | Machines other people shared with you, with the owner's name. See [Sharing](sharing.md). |
-| **Example machines** | Three built-in examples: **Equal a and b** (a decider), **Binary increment** (computes an output), and **Copy to a second tape** (multi-tape). |
+| **Example machines** | Seven built-in examples, one for each kind of machine: **Equal a and b** (a decider), **Binary increment** (computes an output), **Copy to a second tape** (multi-tape), **Only zeros**, **Every second a** (multi-step moves), **Swap the first a** (a stationary move), and **Contains a 1** (nondeterministic). |
 
-Signed out, **Your machines** shows the machines saved in this browser, and both of the first sections offer a link to sign in. Dates are shown year first (`2026/09/24`).
+Signed out, **Your machines** shows the machines saved in this browser, and both of the first sections offer a link to sign in. Dates are shown year first (`2026/09/24`). A link at the foot of the page opens the **privacy policy**, which says what the app stores and where.
 
 ## Creating a Machine
 
@@ -55,7 +55,7 @@ The open machine's name sits in the middle of the navigation bar. If you own the
 
 ## Deleting
 
-A card you own on the home page has a **Delete** button. It asks first, since a deleted machine cannot be brought back.
+A card you own on the home page has a **Delete** button. It asks first, since a deleted machine cannot be brought back. Deleting is done from the home page; the editor has no delete.
 
 ## Where Machines Live
 

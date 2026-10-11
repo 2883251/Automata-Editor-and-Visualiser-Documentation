@@ -45,17 +45,19 @@ plugins:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
+  - Getting Started:
+      - Getting Started: getting-started.md
+      - Glossary: glossary.md
   - Features:
       - Overview: Features/index.md
       - Machine Management: Features/machine-management.md
       - Simulation & Playback: Features/simulation.md
       - Test Cases & Plots: Features/test-cases.md
       - TM Variants: Features/tm-variants.md
+      - Nondeterministic Machines: Features/nondeterminism.md
       - Export: Features/export.md
       - Sharing: Features/sharing.md
   - UI Design: ui-design.md
-  - Performance: performance.md
   - Technical Architecture:
       - Overview: Technical Architecture/index.md
       - System Overview: Technical Architecture/system-overview.md
@@ -64,6 +66,7 @@ nav:
       - Frontend Architecture: Technical Architecture/frontend-architecture.md
   - API Documentation:
       - Overview: API Documentation/index.md
+      - Using the API: API Documentation/using-the-api.md
       - Authentication & Security: API Documentation/authentication.md
       - REST Endpoints: API Documentation/rest-endpoints.md
       - WebSocket Events: API Documentation/websocket-events.md
@@ -79,10 +82,11 @@ nav:
       - Git Methodology: Project Foundations/git-methodology.md
       - Project Methodology: Project Foundations/project-methodology.md
       - Tech Stack: Project Foundations/tech-stack.md
-  - Glossary: glossary.md
-  - Proof of Meetings: proof-of-meetings.md
-  - User Testing: user-testing-feedback.md
-  - Rubric Proof: rubric-proof.md
+  - Evidence:
+      - Rubric Proof: rubric-proof.md
+      - Performance: performance.md
+      - User Testing: user-testing-feedback.md
+      - Proof of Meetings: proof-of-meetings.md
 
 extra:
   social:

@@ -1,6 +1,6 @@
 # Performance
 
-Lab measurements from [PageSpeed Insights](https://pagespeed.web.dev/) for the deployed frontend at `https://automata.ev.gghea7fxbsh9b5hx.southafricanorth-01.azurewebsites.net/`.
+Lab measurements from [PageSpeed Insights](https://pagespeed.web.dev/) for the deployed frontend at `https://automata-ev-gghea7fxbsh9b5hx.southafricanorth-01.azurewebsites.net/`.
 
 **Report date:** 11 October 2026
 **Lighthouse:** 13.5.0

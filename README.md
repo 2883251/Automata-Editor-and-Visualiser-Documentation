@@ -6,8 +6,8 @@ This repository contains the official documentation for the Automata Editor proj
 
 ### Prerequisites
 
-- Python 3.8+
-- pip or poetry
+- Python 3.12 (the version CI builds with)
+- pip
 
 ### Installation
 
@@ -22,8 +22,8 @@ pip install -r requirements.txt
 # Serve documentation locally (http://localhost:8000)
 mkdocs serve
 
-# Build static site
-mkdocs build
+# Build static site, failing on broken links (what CI runs)
+mkdocs build --strict
 ```
 
 The built site will be in the `site/` directory.
@@ -39,7 +39,11 @@ The built site will be in the `site/` directory.
 │   ├── getting-started.md
 │   ├── glossary.md
 │   ├── ui-design.md
+│   ├── performance.md
 │   ├── proof-of-meetings.md
+│   ├── user-testing-feedback.md
+│   ├── rubric-proof.md
+│   ├── Features/
 │   ├── Technical Architecture/
 │   ├── API Documentation/
 │   ├── Development Guide/
@@ -50,16 +54,21 @@ The built site will be in the `site/` directory.
 
 ## Documentation Sections
 
+- **[Getting Started](docs/getting-started.md)** — Open the app and build a first machine
+- **[Features](docs/Features/index.md)** — What the editor can do
 - **[Technical Architecture](docs/Technical%20Architecture/index.md)** — System design and component architecture
 - **[API Documentation](docs/API%20Documentation/index.md)** — REST API and WebSocket reference
 - **[Development Guide](docs/Development%20Guide/index.md)** — Contributing and development setup
 - **[Project Foundations](docs/Project%20Foundations/index.md)** — Git methodology, project structure, and tech stack
-- **[UI Design](docs/ui-design.md)** — Application UI mockup and pane layout
+- **[UI Design](docs/ui-design.md)** — Layout, accessibility, visual design, responsiveness and navigation
+- **[Performance](docs/performance.md)** — Measured performance
 - **[Proof of Meetings](docs/proof-of-meetings.md)** — Meeting evidence log
+- **[User Testing](docs/user-testing-feedback.md)** — Feedback from user testing and what was done with it
+- **[Rubric Proof](docs/rubric-proof.md)** — Where each rubric criterion is evidenced
 
 ## Deployment
 
-The documentation is automatically built and deployed to **GitHub Pages** on every push to the main branch.
+The documentation is automatically built and deployed to **GitHub Pages** on every push to the main branch. Gitea mirrors the repository to GitHub, where a GitHub Actions workflow builds and publishes it. A Gitea Actions workflow also runs the strict build on every push and pull request.
 
 ## Contributing
 
@@ -95,4 +104,4 @@ For questions about the documentation, please refer to the project's issue track
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

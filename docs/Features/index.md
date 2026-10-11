@@ -1,6 +1,6 @@
 # Features
 
-A user-facing overview of what the Automata Editor can do, organised by the project's feature tiers. Sprint 2 (August 26 – September 15, 2026) delivered the intermediate feature set: simulation with playback, machine management, export, test cases with complexity plots, and the API for machine sharing, plus multi-tape machine support in the Core package.
+A user-facing overview of what the Automata Editor can do, organised by the project's feature tiers. Every feature below is shipped and live at <https://automata-ev-gghea7fxbsh9b5hx.southafricanorth-01.azurewebsites.net>. Sprint 1 delivered the two synchronised editors, sprint 2 the intermediate set (simulation, machine management, export, test cases and plots, sharing, machine variants), sprint 3 the advanced set (nondeterministic machines, simultaneous editing, the debugger, API keys and marking), and sprint 4 stationary moves, in-app help and finishing work.
 
 ---
 
@@ -10,10 +10,13 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 |---|---|---|
 | Dual editor — visual diagram + instruction code, kept in sync | Shipped (sprint 1) | [UI Design](../ui-design.md) |
 | Interactive state diagram — add/delete states, mark start/accepting/rejecting, draw transitions, reposition, auto-arrange | Shipped (sprint 1) | [UI Design](../ui-design.md) |
-| Instruction code editor with syntax highlighting and inline diagnostics | Shipped (sprint 1) | [UI Design](../ui-design.md) |
+| Instruction code editor with syntax highlighting, inline diagnostics, suggestions inside a rule, and a quick fix that fills in missing transitions | Shipped (sprint 1; suggestions in sprint 3) | [UI Design](../ui-design.md) |
 | Machine management — create, save, open, rename, delete; account storage, home page, explicit save and revert | Shipped (sprints 2 and 3) | [Machine Management](machine-management.md) |
 | TM simulation — run, pause, step, tape visualisation, resource usage | Shipped (sprint 2) | [Simulation & Playback](simulation.md) |
 | Export — diagram as image, instructions as a table | Shipped (sprint 2) | [Export](export.md) |
+| Example machines — seven on the home page, one for each kind of machine | Shipped (sprints 3 and 4) | [Machine Management](machine-management.md#the-home-page) |
+| In-app help — a Help dialog with seven topics and worked examples | Shipped (sprint 4, [P3]) | [Getting Started](../getting-started.md#help-inside-the-app) |
+| Light and dark mode, and a layout for phones | Shipped (sprint 3) | [UI Design](../ui-design.md) |
 
 ## Intermediate Features
 
@@ -29,10 +32,10 @@ A user-facing overview of what the Automata Editor can do, organised by the proj
 
 | Feature | Status |
 |---|---|
-| Nondeterministic machines with computation tree visualisation and branch traversal | Shipped (sprint 3, [O1]-[O3]) |
+| Nondeterministic machines with computation tree visualisation and branch traversal | Shipped (sprint 3, [O1]-[O3]); see [Nondeterministic Machines](nondeterminism.md) |
 | Real-time collaborative editing, with presence and connection recovery | Shipped (sprint 3, [N1]-[N5]); see [Sharing](sharing.md) and [WebSocket Events](../API%20Documentation/websocket-events.md) |
 | API key management — create, list, and revoke keys for external callers | Shipped (sprint 3, [A8]); see [API Key Management](../API%20Documentation/rest-endpoints.md#api-key-management-apiapi-keys) |
-| Marking endpoint — run test cases against a machine via API key for grading and CI | Shipped (sprint 3, [A7]); see [Marking](../API%20Documentation/rest-endpoints.md#marking-apimark) |
+| Marking endpoint — run test cases against a machine via API key for grading and CI | Shipped (sprint 3, [A7]); see [Using the API](../API%20Documentation/using-the-api.md) and [Marking](../API%20Documentation/rest-endpoints.md#marking-apimark) |
 
 ---
 

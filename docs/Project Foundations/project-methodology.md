@@ -136,9 +136,9 @@ The last weekly scrum of each sprint reserves time at the end for a retrospectiv
 
 ### 6.1 Board
 
-Work is tracked on a **Gitea project board** spanning all three repositories. Columns are `Backlog → Ready → In Progress → In Review → Done`.
+Work is tracked on a **Gitea project board** spanning all four repositories. Columns are `Backlog → Ready → In Progress → In Review → Done`.
 
-**Justification.** The board lives on the same Gitea instance as the code, which is what makes it cheap to keep accurate. Issue numbers flow directly into the branch names required by Git Methodology §3 (`feat/42-import-automata`), pull requests close their issues on merge, and one board covers the `package`, `frontend`, and `backend` repositories without duplicated bookkeeping. A separate tracker would require the team to maintain the link between board and code by hand, which is exactly the maintenance that lapses first when deadlines approach. With no single person owning the board, low-friction and largely automatic upkeep is not a convenience but a requirement.
+**Justification.** The board lives on the same Gitea instance as the code, which is what makes it cheap to keep accurate. Issue numbers flow directly into the branch names required by Git Methodology §3 (`feat/42-import-automata`), pull requests close their issues on merge, and one board covers the Core, Frontend, Backend and Documentation repositories without duplicated bookkeeping. A separate tracker would require the team to maintain the link between board and code by hand, which is exactly the maintenance that lapses first when deadlines approach. With no single person owning the board, low-friction and largely automatic upkeep is not a convenience but a requirement.
 
 ### 6.2 Work items
 
@@ -166,7 +166,7 @@ The two documents describe one process from two angles. The mapping is:
 | Sprint | Release, with branch `dev/sprint-<number>` (Git §3) |
 | Backlog item | Working branch `<type>/<number>-<description>` (Git §3) |
 | Item complete | Squashed pull request into the release branch (Git §5) |
-| Sprint close | Release branch merged into `main` and tagged; deployed (Git §7) |
+| Sprint close | Release branch merged into `main`; deployed (Git §7) |
 | Mutual accountability | Mandatory peer review on every pull request (Git §5) |
 | Release responsibility for a sprint | Assigned at the scrum preceding the release (Git §7) |
 | Defect found in a demonstrated increment | `hotfix/` branch from `main` (Git §3) |
@@ -182,9 +182,9 @@ The two documents describe one process from two angles. The mapping is:
 | Bidirectional editor synchronisation proves harder than estimated | Core basic feature at risk | Attempted first, in Sprint 1, as the highest-risk Must item; architecture chosen so the collaborative editing layer reuses the same document model |
 | Email-only client contact slows feedback | Wrong direction pursued for longer | Each increment deployed so the client can use it directly; written reports state explicitly what is and is not working |
 | Simultaneous editing does not fit | Advanced features incomplete | Classified `Could`; a working single-user product is delivered regardless |
-| Non-halting machines freeze the application during a demonstration | Client review derailed | Simulation runs off the main thread with a step budget; treated as a Must, not an optimisation |
+| Non-halting machines freeze the application during a demonstration | Client review derailed | Simulation runs one step at a time on a timer with a step budget, so the page stays responsive and a long run pauses itself; treated as a Must, not an optimisation |
 | A team member becomes unavailable | Knowledge concentrated in one person | No standing roles; every change reviewed by a second member, so no area has only one informed developer |
 
 <br>
 
-**AI Declaration:** The preceding document was drafted and edited with the assistance of: Claude Cowork [Claude Opus 5].
+**AI Declaration:** The preceding document was drafted and edited with the assistance of: Claude Cowork [Claude Opus 5]. The repository count and the simulation risk row were corrected with the assistance of: Claude Code [Claude Opus 5.5].

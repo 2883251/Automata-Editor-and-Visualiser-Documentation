@@ -1,8 +1,8 @@
 # Authentication & Security
 
-The application uses Auth0 (Google) for all authentication. No custom auth logic is written — Auth0 handles sign-up, sign-in, password reset, account deletion, and social login via its hosted Universal Login page.
+The application uses Auth0 for all authentication. A user signs in with Google, or with an email address and password. No custom auth logic is written — Auth0 handles sign-up, sign-in, password reset, account deletion, and social login via its hosted Universal Login page.
 
-Authentication is fully wired: the frontend sign-in/sign-out flows and session persistence are live, and every machine and share endpoint on the backend requires a valid JWT.
+Authentication is fully wired: the frontend sign-in/sign-out flows and session persistence are live, and every machine, share and API key endpoint on the backend requires a valid JWT. The marking endpoint takes an [API key](#api-key-authentication) instead, and the collaboration WebSocket takes the same JWT as a query parameter.
 
 ---
 
@@ -18,10 +18,12 @@ Authentication is fully wired: the frontend sign-in/sign-out flows and session p
 ## Authentication Flow
 
 1. User clicks "Sign In" in the frontend
-2. Auth0 Universal Login page handles credentials (Google, GitHub, email)
+2. Auth0 Universal Login page handles credentials (Google sign-in, or an email address and password)
 3. Frontend receives a JWT access token via `@auth0/auth0-react`
 4. Token sent as `Authorization: Bearer <token>` header on API requests
 5. Backend validates token signature, issuer, and audience via `express-oauth2-jwt-bearer`
+
+The collaboration WebSocket cannot carry an `Authorization` header, so the frontend sends the same access token as `?token=` when it connects. The backend verifies it against the tenant's signing keys with `jose`, checking the same issuer and audience. See [WebSocket Events](websocket-events.md#connecting).
 
 ---
 
@@ -41,6 +43,8 @@ Authentication is fully wired: the frontend sign-in/sign-out flows and session p
 |---|---|
 | `AUTH0_ISSUER_BASE_URL` | Auth0 tenant URL, used to validate incoming JWTs |
 | `AUTH0_AUDIENCE` | Auth0 API identifier this server accepts tokens for |
+
+No scopes or permissions are checked. A valid token for the audience is enough, and what a caller may do follows from the machine's owner and share list.
 
 ---
 
@@ -64,25 +68,25 @@ See [Sharing](../Features/sharing.md) for the user-facing flow and [REST Endpoin
 
 ## CORS Configuration
 
-The backend uses the `cors` middleware with origin restricted to `CORS_ORIGIN` (defaults to `*`). In production this is set to the frontend's Azure URL.
+The backend uses the `cors` middleware with origin restricted to `CORS_ORIGIN` (defaults to `*`). In production this is set to the frontend's Azure URL. The collaboration WebSocket checks the `Origin` header against the same value.
 
 ---
 
 ## Development Without Auth0 Configured
 
-If `AUTH0_ISSUER_BASE_URL` or `AUTH0_AUDIENCE` is unset (common before the tenant is set up), the auth middleware responds **503 Service Unavailable** with a clear message on protected routes instead of failing confusingly — the API still boots and serves `/health`.
+If `AUTH0_ISSUER_BASE_URL` or `AUTH0_AUDIENCE` is unset (common before the tenant is set up), the auth middleware responds **503 Service Unavailable** with a clear message on protected routes instead of failing confusingly — the API still boots and serves `/health`. The marking endpoint still works, since it does not use Auth0, and a collaboration connection is closed with `4001`.
 
 ---
 
 ## API Key Authentication
 
-The marking endpoint (`POST /api/mark`) is designed for external callers — grading scripts, CI pipelines, LMS integrations — that operate without a browser session. These callers authenticate with an **API key** rather than an Auth0 JWT.
+The marking endpoint (`POST /api/mark`) is designed for external callers — grading scripts, CI pipelines, LMS integrations — that operate without a browser session. These callers authenticate with an **API key** rather than an Auth0 JWT. For a walk-through, see [Using the API](using-the-api.md).
 
 ### How it works
 
-1. A signed-in user creates an API key through the editor UI (or `POST /api/api-keys` with their JWT). The plain-text key is returned once; the server stores only a SHA-256 hash.
+1. A signed-in user creates an API key in the app, from the key icon in the navigation bar (or with `POST /api/api-keys` and their JWT). The key is 32 random bytes written as 64 hex characters. The plain-text key is returned once; the server stores only a SHA-256 hash.
 2. The caller sends the key in the `X-API-Key` header (configurable via the `API_KEY_HEADER_NAME` environment variable).
-3. The backend hashes the received value, looks it up in the `api_keys` collection, and attaches the owning user's `sub` to the request.
+3. The backend hashes the received value, looks it up in the `apikeys` collection, and attaches the owning user's `sub` to the request.
 
 ### Error responses
 
@@ -102,6 +106,8 @@ The marking endpoint (`POST /api/mark`) is designed for external callers — gra
 - Keys are scoped to the user who created them. Every marking request is attributed to a specific user via `sub`.
 - The plain-text key is never stored. Only the SHA-256 hash is kept in the database, so a database compromise does not expose usable keys.
 - Revoking a key (`DELETE /api/api-keys/:id`) deletes the document immediately. Subsequent requests with that key receive `403`.
+- A key does not expire, and there is no limit on how many a user may hold. Revoke a key that is no longer needed.
+- A key works on the marking endpoint only. It cannot read or change anyone's machines.
 - A missing or another user's key returns `404` on revocation rather than `403`, to avoid leaking the existence of keys belonging to other users.
 
 See [REST Endpoints](rest-endpoints.md#marking-apimark) for the marking endpoint request and response shapes.
@@ -114,3 +120,4 @@ See [REST Endpoints](rest-endpoints.md#marking-apimark) for the marking endpoint
 
 **AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
 API key authentication was documented with the assistance of: Qoder IDE [auto].
+The WebSocket token, key format and key limits were documented with the assistance of: Claude Code [Claude Opus 5.5].

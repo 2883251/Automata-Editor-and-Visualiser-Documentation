@@ -2,7 +2,7 @@
 
 Export your machine as an image or as an instruction table from the **Export** button in the navigation bar. Shipped in sprint 2 ([H1]-[H2]).
 
-The export dialog is an accessible modal: focus is trapped inside while open, **Escape** closes it, and focus returns to where you left off.
+The export dialog takes the keyboard focus when it opens, **Escape** closes it, and focus returns to where you left off. Files are named after the machine.
 
 ---
 
@@ -12,6 +12,7 @@ The export dialog is an accessible modal: focus is trapped inside while open, **
 - Rendered at 3× screen resolution so it stays crisp in documents and slides.
 - Captures **every state** — including ones scrolled off screen while zoomed in — with generous padding that covers start-arrow labels and busy self-loop arcs.
 - Independent of your current pan/zoom: the exported image always frames the whole machine.
+- Always drawn in **light mode** on a white background, whichever colour mode the app is in, so an image looks the same in any document.
 
 ## Instructions as a Table (H2)
 
@@ -24,6 +25,8 @@ One row per transition, sorted by state then read symbol so the output is stable
 - A transition that moves the head several cells in one step shows the distance alongside the direction (e.g. `R4`).
 - A head that stays shows as `S`, with no distance.
 - A caption line names the machine's start, accepting, and rejecting states.
+- A multi-tape machine lists every tape's read, write and move in the one row, separated by commas.
+- For a nondeterministic machine the table lists the first transition for each read. The extra branches are not in it.
 
 ## Delivery Formats
 
@@ -39,4 +42,4 @@ One row per transition, sorted by state then read symbol so the output is stable
 
 ---
 
-**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto].
+**AI Declaration:** The preceding document was generated with the assistance of: Qoder IDE [auto], Claude Code [Claude Opus 5.5].

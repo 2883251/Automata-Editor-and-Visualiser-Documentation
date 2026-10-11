@@ -1,6 +1,8 @@
 # REST Endpoints
 
-Reference for all HTTP endpoints exposed by the backend API (Express 5, `Automata-Editor-and-Visualiser-Backend`). Machine persistence and sharing endpoints were added in sprint 2 (issue #6, M1/F1). All examples assume the API at `http://localhost:4000`.
+Reference for all HTTP endpoints exposed by the backend API (Express 5, `Automata-Editor-and-Visualiser-Backend`). Examples assume a local API at `http://localhost:4000`. The deployed API is at `https://automata-ev-server-dwengvgxevg3hpbz.southafricanorth-01.azurewebsites.net`.
+
+To call the API from a script, start with [Using the API](using-the-api.md).
 
 ---
 
@@ -22,7 +24,7 @@ curl http://localhost:4000/health
 
 ## Authenticated Endpoints
 
-All endpoints below require a valid Auth0 JWT sent as `Authorization: Bearer <token>`. The token's `sub` claim scopes every query; a machine **shared with** the caller can be read. An **editor** may also update it (`PUT`), but only its owner may rename or delete it, or manage its shares.
+All endpoints below require a valid Auth0 JWT sent as `Authorization: Bearer <token>`. The token's `sub` claim scopes every query; a machine **shared with** the caller can be read. An **editor** may also update it (`PUT`), but only its owner may delete it, manage its shares, or rename it with `PATCH`. `PUT` accepts a `name` as well, so an editor's update can change the name; the app itself offers renaming to the owner only.
 
 ### `GET /api/me`
 
@@ -45,8 +47,8 @@ Returns the authenticated user's identity claims from the token.
 | `GET` | `/api/machines` | List the caller's machines |
 | `POST` | `/api/machines` | Create a machine |
 | `GET` | `/api/machines/:id` | Get one machine |
-| `PUT` | `/api/machines/:id` | Full-replacement update |
-| `PATCH` | `/api/machines/:id` | Rename |
+| `PUT` | `/api/machines/:id` | Update the content (fields left out are kept) |
+| `PATCH` | `/api/machines/:id` | Rename (owner only) |
 | `DELETE` | `/api/machines/:id` | Delete |
 | `GET` | `/api/machines/shared-with-me` | Machines shared with the caller |
 
@@ -82,6 +84,7 @@ Creates a machine owned by the caller. Returns **201** with the full machine res
 ```
 
 - `name` is optional (defaults to `Untitled machine`, max 200 chars after trim); `source` and `positions` are required.
+- A request body may be at most 100 kB.
 - `testCases` is optional (defaults to none) and at most 500 entries. Each needs an `id` (up to 100 characters), an `input` (may be empty, up to 10,000 characters), and an `expectation` whose `kind` is `accepts`, `rejects`, or `final-tape` — the last with a `tape` (up to 10,000 characters). Only the shape is checked; a malformed case fails the whole request with `VALIDATION_ERROR`.
 
 #### `GET /api/machines/:id`
@@ -106,13 +109,13 @@ Full machine response, including its `testCases` — a recipient sees the owner'
 
 #### `PUT /api/machines/:id`
 
-Updates a machine. Every field is optional, and a field left out keeps its stored value, so a client can save one part of a machine without resending the rest. That also means a client that predates test cases cannot wipe them. Returns the updated machine response.
+Updates a machine. Every field is optional, and a field left out keeps its stored value, so a client can save one part of a machine without resending the rest. That also means a client that predates test cases cannot wipe them. The owner and editors may call it; a viewer gets `404`. The fields are `name`, `source`, `positions` and `testCases`, so an editor's update may carry a new name. Returns the updated machine response.
 
 A save that changes the source, positions, or test cases is also applied to the machine's collaboration room: to the open room if there is one, so everyone in it sees the save, or otherwise to the room state stored with the machine. See [WebSocket Events](websocket-events.md#the-room). A name-only update leaves the room alone.
 
 #### `PATCH /api/machines/:id`
 
-Rename only. Body: `{ "name": "New name" }` (1–200 chars after trimming, so a machine cannot be renamed to a blank string).
+Rename only, and owner only. Body: `{ "name": "New name" }` (1–200 chars after trimming, so a machine cannot be renamed to a blank string).
 
 #### `DELETE /api/machines/:id`
 
@@ -142,7 +145,7 @@ A change of role, a revoke, or deleting the machine also applies straight away t
 - The email is trimmed and lowercased, then resolved against the **users collection** — a recipient must have signed in to the app at least once. When two Auth0 identities share an email, the most recently active one wins.
 - `role` is optional and defaults to `viewer`.
 - Storing the share is a set-union on the machine's `sharedWith` list, and `editors` for an editor. Sharing again with someone who already has access sets their role. Sharing never changes the machine's `updatedAt` (it changes who can see the machine, not the machine).
-- Returns the updated share list as user summaries:
+- Returns **200** with the updated share list as user summaries:
 
 ```json
 [
@@ -255,12 +258,12 @@ Runs test cases against a machine and returns per-case results with a summary.
 {
   "machine": {
     "kind": "source",
-    "text": "states:\n  q0\n  q1\nstart: q0\naccept: q1\ntape_alphabet: '0', '_'\ninput_alphabet: '0'\ntransitions:\n  (q0, '0') -> (q1, '0', R)\n"
+    "text": "states:\n  q0\n  yes\n  no\n\nstart: q0\naccept: yes\nreject: no\n\ntape_alphabet: '_', '0', '1'\ninput_alphabet: '0', '1'\n\ntransitions:\n  (q0, '0') -> (q0, '0', R)\n  (q0, '1') -> (no, '1', R)\n  (q0, '_') -> (yes, '_', R)\n"
   },
   "testCases": [
-    { "input": "0", "expectation": { "kind": "accepts" } },
-    { "input": "00", "expectation": { "kind": "rejects" } },
-    { "input": "0", "expectation": { "kind": "final-tape", "tape": "0" } }
+    { "input": "000", "expectation": { "kind": "accepts" } },
+    { "input": "010", "expectation": { "kind": "rejects" } },
+    { "input": "01", "expectation": { "kind": "final-tape", "tape": "11" } }
   ],
   "maxSteps": 1000
 }
@@ -271,48 +274,50 @@ The `machine` field accepts two formats via a discriminated union:
 | `kind` | Fields | Description |
 |---|---|---|
 | `source` | `text` (string, non-empty) | Raw instruction language text, parsed by the Core lexer and parser |
-| `serialised` | `data` (object) | A serialised machine document (the JSON shape exported by the editor), passed to the Core `deserialise` function |
+| `serialised` | `data` (object) | A serialised machine document: the JSON that Core's `serialise()` writes (`{ schema, machine, positions }`), passed to the Core `deserialise` function |
 
 Each test case has an `input` string and an `expectation`:
 
 | Expectation `kind` | Meaning |
 |---|---|
 | `accepts` | The machine should halt in an accepting state |
-| `rejects` | The machine should halt in a rejecting state or get stuck |
-| `final-tape` | The machine should halt with `tape` matching the tape contents after the run |
+| `rejects` | The machine should halt in a rejecting state, or get stuck (no transition applies) |
+| `final-tape` | The first tape should match `tape` after the run. Blanks at either end are ignored, and so is the position on the tape. The machine need not accept |
 
-`maxSteps` is optional. When omitted, the Core default (`DEFAULT_STEP_LIMIT`) applies. The ceiling is 10,000,000; values above it are rejected with `VALIDATION_ERROR`.
+`testCases` needs at least one case. `maxSteps` is optional. When omitted, the Core default (`DEFAULT_STEP_LIMIT`, 10,000) applies. The ceiling is 10,000,000; values above it are rejected with `VALIDATION_ERROR`.
+
+A machine is run as a deterministic one. A machine marked `nondeterministic` follows the first transition written for each choice.
 
 #### Response
 
-Returns **200 OK** with per-case results and a summary:
+Returns **200 OK** with per-case results and a summary. This is the reply to the request above:
 
 ```json
 {
   "results": [
     {
-      "testCase": { "input": "0", "expectation": { "kind": "accepts" } },
+      "testCase": { "input": "000", "expectation": { "kind": "accepts" } },
       "outcome": "accepted",
       "passed": true,
-      "measurement": { "kind": "measured", "inputLength": 1, "steps": 1, "cells": 2 }
+      "measurement": { "kind": "measured", "inputLength": 3, "steps": 4, "cells": 5 }
     },
     {
-      "testCase": { "input": "00", "expectation": { "kind": "rejects" } },
-      "outcome": "stuck",
+      "testCase": { "input": "010", "expectation": { "kind": "rejects" } },
+      "outcome": "rejected",
       "passed": true,
-      "measurement": { "kind": "measured", "inputLength": 2, "steps": 0, "cells": 1 }
+      "measurement": { "kind": "measured", "inputLength": 3, "steps": 2, "cells": 3 }
     },
     {
-      "testCase": { "input": "0", "expectation": { "kind": "final-tape", "tape": "0" } },
-      "outcome": "accepted",
+      "testCase": { "input": "01", "expectation": { "kind": "final-tape", "tape": "11" } },
+      "outcome": "rejected",
       "passed": false,
-      "measurement": { "kind": "measured", "inputLength": 1, "steps": 1, "cells": 2 },
+      "measurement": { "kind": "measured", "inputLength": 2, "steps": 2, "cells": 3 },
       "comparison": {
-        "expected": "0",
-        "actual": "0",
+        "expected": "11",
+        "actual": "01",
         "origin": 0,
-        "firstDifference": -1,
-        "firstDifferencePosition": -1
+        "firstDifference": 0,
+        "firstDifferencePosition": 0
       }
     }
   ],
@@ -330,10 +335,10 @@ Each result entry includes:
 - `testCase` — the input and expectation echoed back
 - `outcome` — one of `accepted`, `rejected`, `stuck`, `exceeded-limit`
 - `passed` — whether the outcome matched the expectation
-- `measurement` — resource usage (`inputLength`, `steps`, `cells`), or `excluded` with a `reason` when the step budget ran out
-- `comparison` — present only for `final-tape` expectations; shows `expected`, `actual`, `firstDifference`, and `firstDifferencePosition`
+- `measurement` — `kind: "measured"` with the resource usage (`inputLength`, `steps`, `cells`), or `kind: "excluded"` with `inputLength`, `reason` and `limit` when the step budget ran out
+- `comparison` — present only for `final-tape` expectations; shows `expected`, `actual`, `origin`, `firstDifference`, and `firstDifferencePosition`. The last two are `null` when the tapes match
 
-The `summary` counts `total`, `passed`, `failed`, and `excluded` (cases that exceeded the step budget).
+The `summary` counts `total`, `passed`, `failed`, and `excluded` (cases that exceeded the step budget, which count as neither passed nor failed).
 
 #### Marking error responses
 
@@ -342,8 +347,9 @@ The `summary` counts `total`, `passed`, `failed`, and `excluded` (cases that exc
 | `UNAUTHENTICATED` | `401` | Missing `X-API-Key` header |
 | `FORBIDDEN` | `403` | Unrecognised API key |
 | `VALIDATION_ERROR` | `400` | Request body failed schema validation (empty test cases, `maxSteps` above ceiling, etc.) |
-| `PARSE_ERROR` | `400` | Source text contains syntax errors; `issues` array lists each parse error message |
-| `INVALID_MACHINE` | `400` | The machine definition is semantically invalid (undefined states, malformed serialised data) |
+| `PARSE_ERROR` | `400` | Source text contains syntax errors; a `diagnostics` array lists each one as `{ severity, message, range }`, where `range` has `start`, `end`, `line` and `column` |
+| `INVALID_MACHINE` | `400` | The machine definition is semantically invalid (undefined states, malformed serialised data). `detail` says why, and some cases also carry a `diagnostics` array |
+| `INTERNAL_ERROR` | `500` | An unexpected fault while marking |
 
 No data is persisted. The endpoint is a pure computation — nothing is written to the database.
 
@@ -372,7 +378,7 @@ Every endpoint addresses a resource or a collection of resources, never an actio
 |---|---|---|
 | `GET` | Reading a resource or collection | Yes |
 | `POST` | Creating a resource, or a computation that cannot map to CRUD (`/api/mark`) | No |
-| `PUT` | Full replacement of a machine's definition | Yes |
+| `PUT` | Updating a machine's content. Fields left out keep their stored value | Yes |
 | `PATCH` | Partial update (rename a machine, change a share's role) | Yes |
 | `DELETE` | Removing a resource (machine, share, API key) | Yes |
 
@@ -380,29 +386,29 @@ Every endpoint addresses a resource or a collection of resources, never an actio
 
 | Code | When |
 |---|---|
-| `200 OK` | Successful read or computation |
+| `200 OK` | Successful read, update, share, or computation |
 | `201 Created` | Resource created (machine, API key) |
 | `204 No Content` | Successful delete or revoke — no body |
 | `400 Bad Request` | Validation failure, parse error, or semantic conflict |
 | `401 Unauthorized` | Missing or invalid credentials |
-| `403 Forbidden` | Valid API key but not recognised (marking endpoint) |
+| `403 Forbidden` | An API key was sent but is not recognised (marking endpoint) |
 | `404 Not Found` | Resource does not exist or caller does not own it |
-| `500 Internal Server Error` | Unexpected server fault |
+| `500 Internal Server Error` | Unexpected server fault (`INTERNAL_ERROR` on the marking endpoint) |
 | `503 Service Unavailable` | Auth0 not configured (development bootstrap) |
 
 ### Ownership and security
 
-- Every machine route requires a valid Auth0 JWT; the caller's `sub` claim scopes all queries to their own documents.
+- Every machine route requires a valid Auth0 JWT; the caller's `sub` claim scopes all queries to the machines they own or that are shared with them.
 - A request for a machine the caller does not own returns `404`, not `403` — ownership failures are indistinguishable from missing resources, so the API leaks no information about other users' data.
 - The marking endpoint authenticates with an `X-API-Key` header instead of a JWT, allowing external callers (grading scripts, CI) without a browser session.
 
 ### Validation
 
-Every mutating route passes its request through Zod validation middleware (`validateBody`, `validateParams`, `validateQuery`) before reaching the controller. Malformed input is rejected at the route level with a `400` and a structured `issues` array, rather than surfacing as a database error.
+Every route that takes a body, path parameter or query passes it through Zod validation middleware (`validateBody`, `validateParams`, `validateQuery`) before reaching the controller. Malformed input is rejected at the route level with a `400` and a structured `issues` array, rather than surfacing as a database error.
 
 ### Consistent error shape
 
-All error responses use the same JSON structure (`{ "error": "CODE", "detail": "..." }`) regardless of which endpoint or middleware produced them. See [Error Format](#error-format) below.
+Error responses written by the API use one JSON structure (`{ "error": "CODE", "detail": "..." }`) whichever endpoint or middleware produced them. Two responses fall outside it: a missing or invalid JWT is answered by the Auth0 middleware with a bare `401`, and `GET /api/me` answers `{ "error": "No valid token provided" }` with no `detail`. See [Error Format](#error-format) below.
 
 ---
 
@@ -425,12 +431,13 @@ JSON error responses share a consistent shape:
 | `USER_NOT_FOUND` | `404` | No user with that email has signed in yet (sharing) |
 | `CANNOT_SHARE_WITH_SELF` | `400` | The owner cannot be their own share recipient |
 | `VALIDATION_ERROR` | `400` | Request body or path parameters failed Zod validation; includes `issues: [{ path, message }]` |
-| `PARSE_ERROR` | `400` | Source text contains syntax errors (marking endpoint); includes `issues` array |
+| `PARSE_ERROR` | `400` | Source text contains syntax errors (marking endpoint); includes a `diagnostics` array |
 | `INVALID_MACHINE` | `400` | Machine definition is semantically invalid (marking endpoint) |
+| `INTERNAL_ERROR` | `500` | An unexpected fault (marking endpoint) |
 
 Two authentication edge cases are handled at the middleware level, before any controller runs:
 
-- A **missing or invalid JWT** is rejected by the `express-oauth2-jwt-bearer` middleware with its own `401` response.
+- A **missing or invalid JWT** is rejected by the `express-oauth2-jwt-bearer` middleware with its own `401` response. Its body is not JSON, so a client should go by the status code.
 - When **Auth0 is not configured** (`AUTH0_ISSUER_BASE_URL` / `AUTH0_AUDIENCE` unset, common in early development), protected routes respond `503` with `{ "error": "Authentication is not configured", "detail": ... }` so the API can still boot.
 
 Validation errors carry an additional `issues` array from Zod:
@@ -456,3 +463,4 @@ Test-case persistence (M3b) was documented with the assistance of: Claude Code [
 The list preview, collaboration-room saves, and share roles were documented with the assistance of: Claude Code [Claude Opus 5.5].
 API key management and the marking endpoint were documented with the assistance of: Qoder IDE [auto].
 REST architecture conventions were documented with the assistance of: Qoder-IDE [Qwen3.8-Max].
+The marking example and error details were corrected with the assistance of: Claude Code [Claude Opus 5.5].
